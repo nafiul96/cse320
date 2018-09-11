@@ -50,7 +50,85 @@
  */
 int validargs(int argc, char **argv)
 {
-    return 0;
+
+
+
+    char **bigptr = argv;
+
+    int i;
+
+    unsigned long int mask;
+
+
+    for(i=1; i<argc; i++){
+
+
+        //pointer to the each element of the 2D array
+        bigptr = bigptr+ i;
+        char *p = *bigptr;
+
+
+
+        p= p+1;
+
+
+        if(*p == 'h'){
+            mask = 0x8;
+            mask =  mask<<60;
+            printf("helpmask is %lx \n", mask);
+            global_options = global_options | mask;
+            return  1;
+
+        }else if(*p == 'u'){
+
+            p = p+2;
+
+            if(*p == 'f'){
+
+
+            }else{
+
+
+                return 0;
+            }
+
+        }else if(*p == 'd'){
+
+            p = p+2;
+
+            if(*p == 'f'){
+
+            }else{
+
+                return 0;
+            }
+
+
+
+        }else if(*p == 'c'){
+
+            p = p+2;
+
+            if (*p == 'k'){
+
+
+            }else{
+                return 0;
+            }
+
+        }else{
+
+
+            return 0;
+        }
+
+
+    }
+
+
+
+
+    return 1;
 }
 
 /**
