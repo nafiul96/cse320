@@ -2,6 +2,7 @@
 
 #include "debug.h"
 #include "hw1.h"
+#include "validhelp.h"
 
 #ifdef _STRING_H
 #error "Do not #include <string.h>. You will get a ZERO."
@@ -50,85 +51,83 @@
  */
 int validargs(int argc, char **argv)
 {
-
-
-
-    char **bigptr = argv;
-
-    int i;
-
     unsigned long int mask;
+    int argct = 1;
 
-
-    for(i=1; i<argc; i++){
-
-
-        //pointer to the each element of the 2D array
-        bigptr = bigptr+ i;
-        char *p = *bigptr;
-
-
-
-        p= p+1;
-
-
-        if(*p == 'h'){
-            mask = 0x8;
-            mask =  mask<<60;
-            printf("helpmask is %lx \n", mask);
-            global_options = global_options | mask;
-            return  1;
-
-        }else if(*p == 'u'){
-
-            p = p+2;
-
-            if(*p == 'f'){
-
-
-            }else{
-
-
-                return 0;
-            }
-
-        }else if(*p == 'd'){
-
-            p = p+2;
-
-            if(*p == 'f'){
-
-            }else{
-
-                return 0;
-            }
-
-
-
-        }else if(*p == 'c'){
-
-            p = p+2;
-
-            if (*p == 'k'){
-
-
-            }else{
-                return 0;
-            }
-
-        }else{
-
-
-            return 0;
-        }
-
-
+    if(argc<2){
+        return  0;
     }
 
 
+    argv++;
 
 
-    return 1;
+
+
+    if(isTop(*argv,'h')){
+        debug("command h");
+        mask = 0x8;
+        mask = mask<<60;
+        global_options |= mask;
+        return  1;
+
+    }else if(isTop(*argv,'u')){
+        debug("command u");
+
+
+
+        return 1;
+
+    }else if (isTop(*argv,'d')){
+        debug("command d");
+        return 1;
+
+    }else  if (isTop(*argv,'c')){
+        debug("command c");
+        argv++;
+        argct++;
+
+        if(isTop(*argv,'k')){
+            argv++;
+            argct++;
+
+
+            if(!validHexKey(*argv)){
+                return 0;
+            }
+
+
+            global_options |= ctoh(*argv);
+
+
+            argct++;
+
+            if(argct < argc){
+                argv++;
+                argct++;
+                if(isTop(*argv,'p')){
+                    return 1;
+                }
+                return 0;
+            }
+
+            if(argct != argc){
+                return 0;
+
+            }
+
+
+            return 1;
+        }
+
+        return 0;
+
+    }else{
+
+        return 0;
+    }
+
+
 }
 
 /**
