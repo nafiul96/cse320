@@ -80,6 +80,72 @@ unsigned long int ctoh(char *c){
 }
 
 
+int validInt(char *c){
+
+    while(*c != 0){
+        if(*c >= '0' && *c <= '9'){
+            c++;
+        }else{
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+
+int mathpow(int a, int b){
+    unsigned int sum = 1;
+
+    int i;
+
+    for(i=0; i<b; i++){
+        sum *= a;
+    }
+
+
+
+    return sum;
+}
+
+
+int countSize(char *c){
+
+    int size =0;
+    while(*c != 0){
+        size++;
+    }
+
+    return size;
+}
+
+
+unsigned int ctoi(char *c){
+
+    char *p = c;
+    unsigned int size =0;
+    unsigned int sum = 0;
+
+    while(*p != 0){
+        size++;
+        p++;
+    }
+
+    char *t = c;
+    while(*t != 0){
+        size--;
+        sum += (*t - '0') * mathpow(10,size);
+        t++;
+    }
+
+    return sum;
+
+}
+
+
+
+
+
 
 
 

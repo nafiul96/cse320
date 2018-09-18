@@ -63,7 +63,6 @@ int validargs(int argc, char **argv)
 
 
 
-
     if(isTop(*argv,'h')){
         debug("command h");
         mask = 0x8;
@@ -73,19 +72,190 @@ int validargs(int argc, char **argv)
 
     }else if(isTop(*argv,'u')){
         debug("command u");
+        argct++;
+
+        // sets the u bit
+        mask  = 0x1;
+        mask = mask<<62;
+        global_options |= mask;
+
+
+        if(argct<argc){
+            argv++;
+            argct++;
+
+            if(isTop(*argv,'f')){
+                argv++;
+                argct++;
+
+                if(validInt(*argv)== 0){
+                    global_options = 0x0;
+                    return 0;
+                }
+
+                mask = ctoi(*argv);
+                mask--;
+                if(mask<0 || mask > 1023){
+                    global_options = 0x0;
+                    return  0;
+                }
+
+                mask = mask<<48;
+
+                global_options |= mask;
+
+
+                if(argct<argc){
+
+                    argct++;
+                    argv++;
+
+                    if(isTop(*argv,'p')){
+                        mask = 0x1;
+                        mask  = mask<<59;
+                        global_options |=  mask;
+                    }else{
+                        global_options = 0x0;
+                        return  0;
+                    }
+                }
+
+                if(argct != argc){
+                    global_options = 0x0;
+                    return 0;
+                }
+
+                return  1;
+
+
+
+
+            }else if(isTop(*argv, 'p')){
+                mask = 0x1;
+                mask = mask<<59;
+                global_options |= mask;
+
+                argv++;
+                argct++;
+                if(argct != argc){
+                    global_options = 0x0;
+                    return 0;
+                }
+
+
+            }else{
+                global_options  = 0x0;
+
+                return 0;
+
+            }
+
+
+
+        }
+
 
 
 
         return 1;
 
-    }else if (isTop(*argv,'d')){
+    }else if(isTop(*argv,'d')){
         debug("command d");
+        argct++;
+
+        // sets the u bit
+        mask  = 0x1;
+        mask = mask<<61;
+        global_options |= mask;
+
+
+        if(argct<argc){
+            argv++;
+            argct++;
+
+            if(isTop(*argv,'f')){
+                argv++;
+                argct++;
+
+                if(validInt(*argv)== 0){
+                    global_options = 0x0;
+                    return 0;
+                }
+
+                mask = ctoi(*argv);
+                mask--;
+                if(mask<0 || mask > 1023){
+                    global_options = 0x0;
+                    return  0;
+                }
+
+                mask = mask<<48;
+
+                global_options |= mask;
+
+
+                if(argct<argc){
+
+                    argct++;
+                    argv++;
+
+                    if(isTop(*argv,'p')){
+                        mask = 0x1;
+                        mask  = mask<<59;
+                        global_options |=  mask;
+                    }else{
+                        global_options = 0x0;
+                        return  0;
+                    }
+                }
+
+                if(argct != argc){
+                    global_options = 0x0;
+                    return 0;
+                }
+
+                return  1;
+
+
+
+
+            }else if(isTop(*argv, 'p')){
+                mask = 0x1;
+                mask = mask<<59;
+                global_options |= mask;
+
+                argv++;
+                argct++;
+                if(argct != argc){
+                    global_options = 0x0;
+                    return 0;
+                }
+
+
+            }else{
+                global_options  = 0x0;
+
+                return 0;
+
+            }
+
+
+
+        }
+
+
+
+
         return 1;
 
     }else  if (isTop(*argv,'c')){
         debug("command c");
         argv++;
         argct++;
+
+        mask  = 0x1;
+        mask  = mask<<60;
+        global_options |= mask;
 
         if(isTop(*argv,'k')){
             argv++;
@@ -97,7 +267,7 @@ int validargs(int argc, char **argv)
             }
 
 
-            global_options |= ctoh(*argv);
+            global_options ^= ctoh(*argv);
 
 
             argct++;
@@ -106,6 +276,10 @@ int validargs(int argc, char **argv)
                 argv++;
                 argct++;
                 if(isTop(*argv,'p')){
+                    mask  = 0x1;
+                    mask = mask<<58;
+                    global_options |= mask;
+
                     return 1;
                 }
                 return 0;
