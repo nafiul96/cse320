@@ -185,13 +185,14 @@ int write_annotation(char *ap, unsigned int size){
 int read_frame(int *fp, int channels, int bytes_per_sample){
 
    int size = channels*bytes_per_sample;
-   while(size>0){
+   int c = 0;
+   while(size>0 && (c=getchar()) != EOF){
      *fp = *fp<<8;
-    *fp |= getchar();
+    *fp |= c;
     size--;
    }
 
-  if(size !=0){
+  if(c == EOF){
     return 0;
 }
 
@@ -224,57 +225,62 @@ int write_frame(int *fp, int channels, int bytes_per_sample){
 }
 
 
-void speedUp(int frames, int factor, int channels, int bps){
+void speedUp(AUDIO_HEADER *hp, int factor){
 
+    int bps = hp->encoding-1;
+    int frames = hp->data_size/bps;
     int i;
-
     for(i=0; i<frames; i++){
 
-      read_frame((int*)input_frame,channels,bps);
+      read_frame((int*)input_frame,hp->channels, bps);
       if((i%factor)==0){
-          write_frame((int*)input_frame,channels,bps);
-        }
-
-        }
-}
-
-
-int frameToInt(char *c){
-
-    int mask = 0;
-    while(*c != 0){
-
-      mask = mask<<8;
-      mask |= *c;
-      c++;
+          write_frame((int*)input_frame, hp->channels, bps);
+      }else{
+        hp->data_size = hp->data_size -1;
+      }
 
     }
-
-    return mask;
 }
 
 
 
 
-void slowDown(int frames, int factor, int channels, int bps){
+void slowDown(AUDIO_HEADER *hp, int factor){
 
   int fct = 0;
   int i = 0;
+  int frames = hp->data_size/ (hp->encoding-1);
+  int bps = hp->encoding-1;
 
-  read_frame((int*)previous_frame,channels,bps);
-  write_frame((int*)previous_frame,channels,bps);
+  if(read_frame((int*)previous_frame,hp->channels,bps) ==0){
+    return;
+  }
+
+  write_frame((int*)previous_frame,hp->channels,bps);
+
   for(fct=0; fct<frames-1; fct++){
 
-    read_frame((int*)input_frame,channels,bps);
-    int t = frameToInt(previous_frame);
-    int  s = frameToInt(input_frame);
+    read_frame((int*)input_frame,hp->channels,bps);
+
+    char* ot = previous_frame;
+    char* os = input_frame;
+    char* p = output_frame;
 
     for(i = 0; i<factor-1; i++){
-      int calculate = t + (s-t)*i/factor;
-      write_frame(&calculate, channels, bps);
+
+
+      while(*ot != 0 && *os != 0){
+        *p = *ot + (*os- *ot)*i/factor;
+        ot++;
+        os++;
+        p++;
     }
 
-    write_frame((int*)input_frame, channels, bps);
+      write_frame((int*)output_frame, hp->channels, bps);
+      hp->data_size = hp->data_size +1;
+    }
+
+    write_frame((int*)input_frame, hp->channels, bps);
 
     char *pp = previous_frame;
     char *ip = input_frame;
@@ -283,7 +289,7 @@ void slowDown(int frames, int factor, int channels, int bps){
       pp++;
       ip++;
     }
-    if(read_frame((int*)previous_frame,channels,bps) == EOF){
+    if(read_frame((int*)previous_frame,hp->channels,bps) == EOF){
 
       return ;
 
@@ -320,21 +326,18 @@ void encryptframe(char *c, int size){
 
 
 
-void cipherifyData(int frames, int key, int channels, int bytes_per_sample){
+void cipherifyData(AUDIO_HEADER *hp){
 
-  int  i=0;
-  int  size  = bytes_per_sample * channels;
+  int  i = 0;
+  int bps = hp->encoding-1;
+  int  size  = bps * hp->channels;
+  int frames = hp->data_size/ bps;
   char *p  = 0;
-  mysrand(key);
-
-// need to encrypt header
- //encryptheader(header)
 
   while(i < frames){
-
-    read_frame((int *)input_frame,channels, bytes_per_sample);
+    read_frame((int *)input_frame,hp->channels, bps);
     encryptframe(input_frame,size);
-    write_frame((int *)input_frame,channels,bytes_per_sample);
+    write_frame((int *)input_frame,hp->channels,bps);
     i++;
   }
 }

@@ -326,7 +326,7 @@ AUDIO_HEADER hp;
 header=&hp;
 
 int annotaton_size = 0;
-int frame_size = 0;
+
 unsigned long int  glbl = global_options;
 glbl  =  glbl>>60;
 
@@ -346,7 +346,7 @@ if(glbl == 8){
         return 0;
     }
 
-    frame_size = (header->encoding-1) * header->channels;
+
     annotaton_size = header->data_offset - sizeof(AUDIO_HEADER);
     if(write_header(header) == 0){
         return 0;
@@ -360,7 +360,7 @@ if(glbl == 8){
         return 0;
     }
    }
-   speedUp(header->data_size/frame_size, glbl, header->channels, header->encoding-1);
+   speedUp(header, glbl);
    return  1;
 
 
@@ -375,7 +375,7 @@ if(glbl == 8){
     if(read_header(header) == 0){
         return 0;
     }
-    frame_size = (header->encoding-1) * header->channels;
+
     annotaton_size= header->data_offset - sizeof(AUDIO_HEADER);
     if(write_header(header) == 0){
         return 0;
@@ -391,7 +391,7 @@ if(glbl == 8){
     }
    }
 
-   slowDown(header->data_size/frame_size, glbl, header->channels, header->encoding-1);
+   slowDown(header, glbl);
    return  1;
 
 }else if(glbl == 1){
@@ -403,21 +403,22 @@ if(glbl == 8){
     if(read_header(header) == 0){
         return 0;
     }
-    frame_size = (header->encoding-1) * header->channels;
+
     annotaton_size= header->data_offset - sizeof(AUDIO_HEADER);
+    mysrand(glbl);
     cipherifyHeader(header);
     write_header(header);
 
    if(annotaton_size>0){
-    if(read_annotation(input_annotation, annotaton_size)){
+    if(read_annotation(input_annotation, annotaton_size) == 0){
         return 0;
     }
-    if (write_annotation(input_annotation, annotaton_size)){
+    if (write_annotation(input_annotation, annotaton_size) == 0){
         return 0;
     }
    }
 
-   cipherifyData(header->data_size/frame_size, glbl, header->channels, header->encoding-1);
+   cipherifyData(header);
 
    return  1;
 
