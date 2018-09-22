@@ -17,12 +17,17 @@
 
 int main(int argc, char **argv)
 {
+
+
     if(!validargs(argc, argv))
         USAGE(*argv, EXIT_FAILURE);
     debug("Options: 0x%lX", global_options);
     if(global_options & (0x1L << 63)) {
+        recode(argv);
         USAGE(*argv, EXIT_SUCCESS);
     }
+
+
 
     return EXIT_SUCCESS;
 }

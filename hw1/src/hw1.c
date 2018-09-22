@@ -2,7 +2,10 @@
 
 #include "debug.h"
 #include "hw1.h"
+
 #include "validhelp.h"
+#include "validheader.h"
+
 
 #ifdef _STRING_H
 #error "Do not #include <string.h>. You will get a ZERO."
@@ -64,14 +67,14 @@ int validargs(int argc, char **argv)
 
 
     if(isTop(*argv,'h')){
-        debug("command h");
+
         mask = 0x8;
         mask = mask<<60;
         global_options |= mask;
         return  1;
 
     }else if(isTop(*argv,'u')){
-        debug("command u");
+
         argct++;
 
         // sets the u bit
@@ -160,7 +163,7 @@ int validargs(int argc, char **argv)
         return 1;
 
     }else if(isTop(*argv,'d')){
-        debug("command d");
+
         argct++;
 
         // sets the u bit
@@ -249,7 +252,7 @@ int validargs(int argc, char **argv)
         return 1;
 
     }else  if (isTop(*argv,'c')){
-        debug("command c");
+
         argv++;
         argct++;
 
@@ -317,5 +320,115 @@ int validargs(int argc, char **argv)
  * @return 1 if the recoding completed successfully, 0 otherwise.
  */
 int recode(char **argv) {
-    return 0;
+
+AUDIO_HEADER* header;
+AUDIO_HEADER hp;
+header=&hp;
+
+int annotaton_size = 0;
+int frame_size = 0;
+unsigned long int  glbl = global_options;
+glbl  =  glbl>>60;
+
+
+
+if(glbl == 8){
+    return 1;
+
+}else if(glbl == 4){
+
+    glbl = global_options;
+    glbl = glbl>>48;
+    unsigned x = 0x3ff;
+    glbl &= x;
+    glbl++;
+    if(read_header(header) == 0){
+        return 0;
+    }
+
+    frame_size = (header->encoding-1) * header->channels;
+    annotaton_size = header->data_offset - sizeof(AUDIO_HEADER);
+    if(write_header(header) == 0){
+        return 0;
+    }
+
+   if(annotaton_size>0){
+    if(read_annotation(input_annotation, annotaton_size) == 0){
+        return 0;
+    }
+    if(write_annotation(input_annotation, annotaton_size) == 0){
+        return 0;
+    }
+   }
+   speedUp(header->data_size/frame_size, glbl, header->channels, header->encoding-1);
+   return  1;
+
+
+}else if (glbl == 2){
+
+    glbl = global_options;
+    glbl = glbl>>48;
+    unsigned x = 0x3ff;
+    glbl &= x;
+    glbl++;
+
+    if(read_header(header) == 0){
+        return 0;
+    }
+    frame_size = (header->encoding-1) * header->channels;
+    annotaton_size= header->data_offset - sizeof(AUDIO_HEADER);
+    if(write_header(header) == 0){
+        return 0;
+    }
+
+   if(annotaton_size>0){
+
+    if(read_annotation(input_annotation, annotaton_size) == 0){
+        return 0;
+    }
+    if(write_annotation(input_annotation, annotaton_size) == 0){
+        return 0;
+    }
+   }
+
+   slowDown(header->data_size/frame_size, glbl, header->channels, header->encoding-1);
+   return  1;
+
+}else if(glbl == 1){
+
+    glbl = global_options;
+    unsigned x = 0xffffffff;
+    glbl &= x;
+
+    if(read_header(header) == 0){
+        return 0;
+    }
+    frame_size = (header->encoding-1) * header->channels;
+    annotaton_size= header->data_offset - sizeof(AUDIO_HEADER);
+    cipherifyHeader(header);
+    write_header(header);
+
+   if(annotaton_size>0){
+    if(read_annotation(input_annotation, annotaton_size)){
+        return 0;
+    }
+    if (write_annotation(input_annotation, annotaton_size)){
+        return 0;
+    }
+   }
+
+   cipherifyData(header->data_size/frame_size, glbl, header->channels, header->encoding-1);
+
+   return  1;
+
 }
+
+
+return 1;
+
+
+}
+
+
+
+
