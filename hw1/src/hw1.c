@@ -410,12 +410,8 @@ if(glbl == 8){
     write_header(header);
 
    if(annotaton_size>0){
-    if(read_annotation(input_annotation, annotaton_size) == 0){
-        return 0;
-    }
-    if (write_annotation(input_annotation, annotaton_size) == 0){
-        return 0;
-    }
+        read_annotation(input_annotation, annotaton_size);
+        write_annotation(input_annotation, annotaton_size);
    }
 
    cipherifyData(header);
@@ -427,6 +423,40 @@ if(glbl == 8){
 
 return 1;
 
+
+}
+
+void modularTest(char **argv){
+
+
+    char **p = argv;
+    char *pt;
+    int ct = 0;
+
+    while(*p != 0){
+        ct++;
+        p++;
+    }
+
+    int i,j, size;
+
+    for(i=0; i<ct; i++){
+
+        pt = *argv;
+        size = 0;
+        while(*pt != 0){
+            size++;
+            pt++;
+        }
+
+
+        pt = *argv;
+        while(*pt !=0){
+
+            pt++;
+        }
+        argv++;
+    }
 
 }
 

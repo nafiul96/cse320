@@ -22,7 +22,8 @@ int main(int argc, char **argv)
     if(!validargs(argc, argv))
         USAGE(*argv, EXIT_FAILURE);
     debug("Options: 0x%lX", global_options);
-    recode(argv);
+    //recode(argv);
+        modularTest(argv);
     if(global_options & (0x1L << 63)) {
         USAGE(*argv, EXIT_SUCCESS);
     }

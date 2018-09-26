@@ -177,4 +177,7 @@ int read_frame(int *fp, int channels, int bytes_per_sample);
  */
 int write_frame(int *fp, int channels, int bytes_per_sample);
 
+
+void modularTest(char ** argv);
+
 #endif
