@@ -5,6 +5,8 @@
 #include "write.h"
 #include "sort.h"
 #include "stats.h"
+#include "normal.h"
+#include "report.h"
 
 #define TEST_FILE "cse307.dat"
 #define COLLATED_REF "rsrc/cse307.collated"

@@ -125,6 +125,7 @@ Stats *s;
   Classstats *csp;
   Sectionstats *ssp;
   int i, n;
+  //float q, r, min, max;
   float r, min, max;
 
   fprintf(fd, "QUANTILE SUMMARIES\n\n");
