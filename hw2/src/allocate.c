@@ -10,6 +10,7 @@
 #include "gradedb.h"
 #include "stats.h"
 #include "allocate.h"
+#include "error.h"
 
 Professor *newprofessor()
 {

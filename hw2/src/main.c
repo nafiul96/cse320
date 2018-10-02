@@ -11,6 +11,8 @@
 #include "write.h"
 #include "normal.h"
 #include "sort.h"
+#include "error.h"
+
 
 /*
  * Course grade computation program

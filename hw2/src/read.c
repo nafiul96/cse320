@@ -2,7 +2,7 @@
 /*
  * Read in grade database from ASCII files
  */
-
+#include<string.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -11,6 +11,7 @@
 #include "stats.h"
 #include "allocate.h"
 #include "read.h"
+#include "error.h"
 
 /*
  * Input file stack
@@ -556,8 +557,8 @@ char *key;
  * and TRUE is returned.
  */
 
-int checktoken(key)
-char *key;
+int checktoken(char *key)
+
 {
         if(!istoken()) advancetoken();
         if(istoken() && !strcmp(tokenptr, key)) {
@@ -608,7 +609,7 @@ void previousfile()
         fprintf(stderr, " ]");
 }
 
-void pushfile(e)
+void pushfile()
 {
         Ifile *nfile;
         char *n;
