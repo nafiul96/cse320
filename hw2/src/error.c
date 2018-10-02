@@ -7,6 +7,10 @@
 #include <stdarg.h>
 #include "error.h"
 
+int errors = 0;
+int warnings = 0;
+int dbflag = 1;
+
 
 void fatal(char *fmt, ...)
 {

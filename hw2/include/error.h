@@ -3,7 +3,7 @@
 
 int errors;
 int warnings;
-int dbflag = 1;
+int dbflag;
 
 void fatal(char *fmt, ...);
 

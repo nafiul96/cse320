@@ -14,11 +14,12 @@
 #include <sys/types.h>
 #include <time.h>
 #endif
+#include "report.h"
 
-void reportparams(fd, fn, c)
-FILE *fd;
-char *fn;
-Course *c;
+void reportparams(FILE *fd, char *fn, Course *c)
+// FILE *fd;
+// char *fn;
+// Course *c;
 {
         char *today = NULL;
         time_t now;
@@ -34,9 +35,11 @@ Course *c;
         fprintf(fd, "\n");
 }
 
-void reportfreqs(fd, s)
-FILE *fd;
-Stats *s;
+// void reportfreqs(fd, s)
+// FILE *fd;
+// Stats *s;
+
+void reportfreqs(FILE *fd, Stats *s)
 {
         Classstats *csp;
         Sectionstats *ssp;
@@ -78,10 +81,11 @@ Stats *s;
         fprintf(fd, "\n");
 }
 
-float interpolatequantile(fp, n, q)
-Freqs *fp;
-int n;
-float q;
+// float interpolatequantile(fp, n, q)
+// Freqs *fp;
+// int n;
+// float q;
+float interpolatequantile(Freqs *fp, int n, float q)
 {
   float pq, nq, ps, ns, qdiff, sdiff, s;
 
@@ -175,9 +179,10 @@ Stats *s;
         fprintf(fd, "\n");
 }
 
-void reportquantiles(fd, s)
-FILE *fd;
-Stats *s;
+// void reportquantiles(fd, s)
+// FILE *fd;
+// Stats *s;
+void reportquantiles(FILE *fd, Stats *s)
 {
         Classstats *csp;
         Sectionstats *ssp;
@@ -231,9 +236,10 @@ Stats *s;
         fprintf(fd, "\n");
 }
 
-void reportmoments(fd, s)
-FILE *fd;
-Stats *s;
+// void reportmoments(fd, s)
+// FILE *fd;
+// Stats *s;
+void reportmoments(FILE *fd, Stats *s)
 {
         Classstats *csp;
         Sectionstats *ssp;
@@ -259,10 +265,11 @@ Stats *s;
 }
 
 //void reportscores(fd, c, nm)
-void reportscores(fd, c, nm)
-FILE *fd;
-Course *c;
-int nm;
+// void reportscores(fd, c, nm)
+// FILE *fd;
+// Course *c;
+// int nm;
+void reportscores(FILE *fd, Course *c, int nm)
 {
        // Assignment *ap;
         Student *stp;
@@ -294,10 +301,11 @@ int nm;
         fprintf(fd, "\n");
 }
 
-void reportcomposites(fd, c, nm)
-FILE *fd;
-Course *c;
-int nm;
+// void reportcomposites(fd, c, nm)
+// FILE *fd;
+// Course *c;
+// int nm;
+void reportcomposites(FILE *fd, Course *c, int nm)
 {
         Student *stp;
         //Score *scp;
@@ -319,10 +327,11 @@ int nm;
  * the vertical axis to a scale of 0 to 20.
  */
 
-void reporthistos(fd, c, s)
-FILE *fd;
-Course *c;
-Stats *s;
+// void reporthistos(fd, c, s)
+// FILE *fd;
+// Course *c;
+// Stats *s;
+void reporthistos(FILE *fd, Course *c, Stats *s)
 {
         Classstats *csp;
        // Sectionstats *ssp;
@@ -384,14 +393,14 @@ Stats *s;
 }
 
 
-//void histo(fd, bins, min, max, cn)
-void histo(FILE *fd, int bins[], float min, float max, int []cnt)
-
-FILE *fd;
-int bins[50], cnt;
-float min, max;
+//void histo(fd, bins, min, max, cn
+void histo(FILE *fd, int bins[50], float min, float max, int cnt)
+// FILE *fd;
+// int bins[50], cnt;
+// float min, max;
 {
-    int row, col, pct, cmax;
+    //int row, col, pct, cmax;
+    int row, col, cmax;
     /*
      * Determine the bin with the most tallies.
      */
@@ -425,12 +434,13 @@ float min, max;
             min, max);
 }
 
-void
-reporttabs(FILE *fd, Course *c, int nm)
+//void reporttabs(FILE *fd, Course *c, int nm)
+void reporttabs(FILE *fd, Course *c)
 {
         Assignment *ap;
         Student *stp;
-        Score *rscp, *nscp;
+        //Score *rscp, *nscp;
+        Score *rscp;
 
         fprintf(fd, "STUDENT INDIVIDUAL SCORES\n\n");
         fprintf(fd, "STUDENT\t");

@@ -12,6 +12,7 @@
 #include "normal.h"
 #include "sort.h"
 #include "error.h"
+#include "report.h"
 
 
 /*
@@ -166,7 +167,8 @@ char *argv[];
         fprintf(stderr, "Calculating statistics...\n");
         s = statistics(c);
         if(s == NULL) fatal("There is no data from which to generate reports.");
-        normalize(c, s);
+        //normalize(c, s);
+        normalize(c);
         composites(c);
         sortrosters(c, comparename);
         checkfordups(c->roster);
@@ -186,7 +188,9 @@ char *argv[];
         if(summaries) reportquantilesummaries(stdout, s);
         if(histograms) reporthistos(stdout, c, s);
         if(scores) reportscores(stdout, c, nonames);
-        if(tabsep) reporttabs(stdout, c, nonames);
+        //if(tabsep) reporttabs(stdout, c, nonames);
+        if(tabsep) reporttabs(stdout, c);
+
 
         fprintf(stderr, "\nProcessing complete.\n");
         printf("%d warning%s issued.\n", warnings+errors,
