@@ -5,6 +5,7 @@
 
 #include<stddef.h>
 #include<stdio.h>
+#include<stdlib.h>
 #include "global.h"
 #include "gradedb.h"
 #include "stats.h"
@@ -24,10 +25,10 @@
 
 void normalize(Course *c)
 {
-        Student *stp;
-        Score *rscp, *nscp;
-        Classstats *csp;
-        Sectionstats *ssp;
+        Student *stp = NULL;
+        Score *rscp = NULL, *nscp = NULL;
+        Classstats *csp = NULL;
+        Sectionstats *ssp = NULL;
 
         for(stp = c->roster; stp != NULL; stp = stp->cnext) {
            stp->normscores = nscp = NULL;
@@ -71,6 +72,7 @@ void normalize(Course *c)
               }
            }
         }
+
 }
 
 /*
@@ -82,9 +84,9 @@ double s;
 Classstats *csp;
 Sectionstats *ssp;
 {
-        Assignment *a;
-        Freqs *fp;
-        int n;
+        Assignment *a = NULL;
+        Freqs *fp = NULL;
+        int n = 0;
 
         a = csp->asgt;
         switch(a->npolicy) {

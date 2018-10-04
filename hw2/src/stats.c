@@ -5,6 +5,7 @@
 
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 #include "global.h"
 #include "gradedb.h"
@@ -162,16 +163,14 @@ Course *c;
 Freqs *count_score(scp, afp)
 Score *scp;
 Freqs *afp;
-{
-        Freqs *fp, *sfp;
+{       //initializedvalue added
+        Freqs *fp=NULL, *sfp=NULL;
 
         for(fp = afp; fp != NULL; sfp = fp, fp = fp->next) {
-
                 if(fp->score == scp->grade) {
                         fp->count++;
                         return(afp);
-                }
-                else if(fp->score > scp->grade) {
+                } else if(fp->score > scp->grade) {
                         if(sfp == NULL) {       /* insertion at head */
                                 sfp = newfreqs();
                                 sfp->next = fp;
@@ -179,23 +178,19 @@ Freqs *afp;
                                 sfp->count = 1;
                                 return(sfp);    /* return new head */
                         } else {                /* insertion in middle */
-
-                                Freqs *node = newfreqs();
-                                node->score = scp->grade;
-                                node->count = 1;
-                                node->next = sfp->next;
-                                sfp->next = node;
-
-                                // sfp->next = newfreqs();
-                                // sfp = sfp->next;
-                                // sfp->next = fp;
-                                // sfp->score = scp->grade;
-                                // sfp->count = 1;
+                                sfp->next = newfreqs();
+                                sfp = sfp->next;
+                                sfp->next = fp;
+                                sfp->score = scp->grade;
+                                sfp->count = 1;
                                 return(afp);    /* return old head */
                         }
                 } else continue;
         }
-        if(sfp == NULL) {       /* insertion into empty list */
+
+
+        if(sfp == NULL) {       /* insertion into empty list */ //added malloc allocation
+                sfp=newfreqs();
                 sfp->next = NULL;
                 sfp->score = scp->grade;
                 sfp->count = 1;

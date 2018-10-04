@@ -76,7 +76,7 @@ int compare();
         }
         stnxt(sp, NULL);
         sp = stab[0];
-       // free(stab);
+        free(stab);
         return(sp);
 }
 

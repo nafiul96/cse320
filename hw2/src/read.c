@@ -30,7 +30,7 @@ char *tokenend = tokenbuf;
 Course *readfile(char *root)
 //char *root;
 {
-        Course *c;
+        Course *c = NULL;
 
         ifile = newifile();
         ifile->prev = NULL;
@@ -44,14 +44,20 @@ Course *readfile(char *root)
         c = readcourse();
         gobbleblanklines();
         expecteof();
-        //fclose(ifile->fd);
+        fclose(ifile->fd);
         fprintf(stderr, " ]\n");
+
+        free(ifile);
+
+
+
+
         return(c);
 }
 
 Course *readcourse()
 {
-        Course *c;
+        Course *c = NULL;
         expecttoken("COURSE");
         c = newcourse();
         c->number = readid();
@@ -154,8 +160,8 @@ Section *sep;
 Score *readscores(a)
 Assignment *a;
 {
-        Score *s;
-        Assignment *ap;
+        Score *s = NULL;
+        Assignment *ap = NULL;
 
         if(!checktoken("SCORE")) return(NULL);
         s = newscore();
@@ -396,7 +402,7 @@ Atype readatype()
 {
         Atype a;
         if(!istoken()) advancetoken();
-        if(istoken()) a = newstring(tokenptr, tokensize()-1);
+        if(istoken()) a = newstring(tokenptr, tokensize());
         else {
                 error("(%s:%d) Expected an assignment type.", ifile->name, ifile->line);
                 a = newstring("", 0);
@@ -607,20 +613,22 @@ void expecteof()
 
 void previousfile()
 {
-        Ifile *prev;
+        Ifile *prev = NULL;
         if((prev = ifile->prev) == NULL)
             fatal("(%s:%d) No previous file.", ifile->name, ifile->line);
 
         //free(ifile);
         fclose(ifile->fd);
-        ifile=prev;
 
+        Ifile *temp = ifile;
+        ifile= prev;
+        free(temp);
         fprintf(stderr, " ]");
 }
 
 void pushfile()
 {
-        Ifile *nfile;
+        Ifile *nfile = NULL;
         char *n;
 
         advanceeol();
@@ -640,6 +648,7 @@ void pushfile()
                 fatal("(%s:%d) Can't open data file %s\n", ifile->name, ifile->line, n);
         ifile = nfile;
         fprintf(stderr, " [ %s", n);
+        free(n);
         gobbleblanklines();
 }
 

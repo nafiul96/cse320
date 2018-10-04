@@ -83,6 +83,7 @@ static void init_options() {
         struct option_info *oip = &option_table[i];
         struct option *op = &long_options[i];
         op->name = oip->name;
+        //op->chr = oip->chr;
         op->has_arg = oip->has_arg;
         op->flag = NULL;
         op->val = oip->val;
@@ -200,6 +201,10 @@ char *argv[];
         if(tabsep) reporttabs(stdout, c);
         //fclose(stdout);
         //free(c);
+
+
+
+
         fprintf(stderr, "\nProcessing complete.\n");
         printf("%d warning%s issued.\n", warnings+errors,
                warnings+errors == 1? " was": "s were");

@@ -4,6 +4,7 @@
  */
 
 #include <stdio.h>
+#include<stdlib.h>
 #include "global.h"
 #include "gradedb.h"
 #include "stats.h"
@@ -40,6 +41,7 @@ void reportparams(FILE *fd, char *fn, Course *c)
         fprintf(fd, "DATA FILE : %s\n", fn);
         fprintf(fd, "RUN DATE  : %s\n", today);
         fprintf(fd, "\n");
+        //free(c->professor);
         // printf("DATA FILE : %s\n", fn);
         // printf("RUN DATE  : %s\n", today);
         // printf("\n");
