@@ -141,6 +141,7 @@ Course *c;
         Score *scp;
 
         for(stp = c->roster; stp != NULL; stp = stp->cnext) {
+
            for(scp = stp->rawscores; scp != NULL; scp = scp->next) {
                if(scp->flag == VALID || scp->subst == USERAW) {
                   scp->cstats->freqs = count_score(scp, scp->cstats->freqs);
@@ -165,10 +166,12 @@ Freqs *afp;
         Freqs *fp, *sfp;
 
         for(fp = afp; fp != NULL; sfp = fp, fp = fp->next) {
+
                 if(fp->score == scp->grade) {
                         fp->count++;
                         return(afp);
-                } else if(fp->score > scp->grade) {
+                }
+                else if(fp->score > scp->grade) {
                         if(sfp == NULL) {       /* insertion at head */
                                 sfp = newfreqs();
                                 sfp->next = fp;
@@ -176,11 +179,18 @@ Freqs *afp;
                                 sfp->count = 1;
                                 return(sfp);    /* return new head */
                         } else {                /* insertion in middle */
-                                sfp->next = newfreqs();
-                                sfp = sfp->next;
-                                sfp->next = fp;
-                                sfp->score = scp->grade;
-                                sfp->count = 1;
+
+                                Freqs *node = newfreqs();
+                                node->score = scp->grade;
+                                node->count = 1;
+                                node->next = sfp->next;
+                                sfp->next = node;
+
+                                // sfp->next = newfreqs();
+                                // sfp = sfp->next;
+                                // sfp->next = fp;
+                                // sfp->score = scp->grade;
+                                // sfp->count = 1;
                                 return(afp);    /* return old head */
                         }
                 } else continue;

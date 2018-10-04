@@ -32,6 +32,7 @@
 #define ALLOUTPUT      10
 #define SORTBY         11
 #define NONAMES        12
+#define OUTPUT         13
 
 static struct option_info {
         unsigned int val;
@@ -66,7 +67,10 @@ static struct option_info {
  {NONAMES,        "nonames",   'n',      no_argument, NULL,
                   "Suppress printing of students' names."},
  {SORTBY,         "sortby",    'k',      required_argument, "key",
-                  "Sort by {name, id, score}."}
+                  "Sort by {name, id, score}."},
+
+ {OUTPUT,         "output",    'o',      required_argument, "outfile",
+                  "Write Output to file, rather than standard output."}
 };
 
 #define NUM_OPTIONS (14)
@@ -103,6 +107,7 @@ char *argv[];
         fprintf(stderr, BANNER);
         init_options();
         if(argc <= 1) usage(argv[0]);
+
         while(optind < argc) {
             if((optval = getopt_long(argc, argv, short_options, long_options, NULL)) != -1) {
                 switch(optval) {
@@ -149,6 +154,7 @@ char *argv[];
                 fprintf(stderr, "No input file specified.\n\n");
                 usage(argv[0]);
         }
+
         char *ifile = argv[optind];
         if(report == collate) {
                 fprintf(stderr, "Exactly one of '%s' or '%s' is required.\n\n",
@@ -165,6 +171,7 @@ char *argv[];
         }
 
         fprintf(stderr, "Calculating statistics...\n");
+
         s = statistics(c);
         if(s == NULL) fatal("There is no data from which to generate reports.");
         //normalize(c, s);
@@ -179,6 +186,7 @@ char *argv[];
         }
         sortrosters(c, compare);
 
+        //stdout = fopen("a.dat","a");
         fprintf(stderr, "Producing reports...\n");
         reportparams(stdout, ifile, c);
         if(moments) reportmoments(stdout, s);
@@ -190,8 +198,8 @@ char *argv[];
         if(scores) reportscores(stdout, c, nonames);
         //if(tabsep) reporttabs(stdout, c, nonames);
         if(tabsep) reporttabs(stdout, c);
-
-
+        //fclose(stdout);
+        //free(c);
         fprintf(stderr, "\nProcessing complete.\n");
         printf("%d warning%s issued.\n", warnings+errors,
                warnings+errors == 1? " was": "s were");

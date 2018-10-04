@@ -23,12 +23,12 @@ Ifile *ifile;
  * Token readahead buffer
  */
 
-char tokenbuf[32];
+char tokenbuf[1024];
 char *tokenptr = tokenbuf;
 char *tokenend = tokenbuf;
 
-Course *readfile(root)
-char *root;
+Course *readfile(char *root)
+//char *root;
 {
         Course *c;
 
@@ -44,7 +44,7 @@ char *root;
         c = readcourse();
         gobbleblanklines();
         expecteof();
-        fclose(ifile->fd);
+        //fclose(ifile->fd);
         fprintf(stderr, " ]\n");
         return(c);
 }
@@ -361,6 +361,7 @@ Surname readsurname()
                 s = newstring("", 0);
         }
         flushtoken();
+
         return(s);
 }
 
@@ -395,7 +396,7 @@ Atype readatype()
 {
         Atype a;
         if(!istoken()) advancetoken();
-        if(istoken()) a = newstring(tokenptr, tokensize());
+        if(istoken()) a = newstring(tokenptr, tokensize()-1);
         else {
                 error("(%s:%d) Expected an assignment type.", ifile->name, ifile->line);
                 a = newstring("", 0);
@@ -444,7 +445,9 @@ void gobblewhitespace()
 {
         char c;
         if(istoken()) return;
-        while(iswhitespace(c = getc(ifile->fd)));
+
+        while(  iswhitespace(c = getc(ifile->fd)) );
+
         ungetc(c, ifile->fd);
 }
 
@@ -508,6 +511,7 @@ void advancetoken()
                 *tokenend++ = c;
         }
         if(tokenend != tokenptr) *tokenend++ = '\0';
+
 }
 
 /*
@@ -518,10 +522,13 @@ void advancetoken()
 void advanceeol()
 {
         char c;
+
+        // checks to see if there is a token
         if(istoken()) error("(%s:%d) Flushing unread input token.", ifile->name, ifile->line);
         flushtoken();
+
         gobblewhitespace();
-        while((c = getc(ifile->fd)) != EOF) {
+        while((c = getc(ifile->fd)) != EOF && tokensize()< 1024) {
                 if(c == '\n') {
                         ungetc(c, ifile->fd);
                         break;
@@ -602,10 +609,12 @@ void previousfile()
 {
         Ifile *prev;
         if((prev = ifile->prev) == NULL)
-                fatal("(%s:%d) No previous file.", ifile->name, ifile->line);
-        free(ifile);
+            fatal("(%s:%d) No previous file.", ifile->name, ifile->line);
+
+        //free(ifile);
         fclose(ifile->fd);
-        ifile = prev;
+        ifile=prev;
+
         fprintf(stderr, " ]");
 }
 

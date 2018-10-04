@@ -26,13 +26,24 @@ void reportparams(FILE *fd, char *fn, Course *c)
         time(&now);
         today = ctime(&now);
 
+        //fd = fopen(fn, "a");
+
         fprintf(fd, "GRADES FOR: %s\n", c->title);
-        if(c->professor)
-                fprintf(fd, "PROFESSOR : %s %s\n",
-                        c->professor->name, c->professor->surname);
+        //printf("GRADES FOR: %s\n", c->title);
+         if(c->professor)
+                 fprintf(fd, "PROFESSOR : %s %s\n",
+                         c->professor->name, c->professor->surname);
+
+               //   printf("PROFESSOR : %s %s\n",
+        //                 c->professor->name, c->professor->surname);
+
         fprintf(fd, "DATA FILE : %s\n", fn);
         fprintf(fd, "RUN DATE  : %s\n", today);
         fprintf(fd, "\n");
+        // printf("DATA FILE : %s\n", fn);
+        // printf("RUN DATE  : %s\n", today);
+        // printf("\n");
+        // fclose(fd);
 }
 
 // void reportfreqs(fd, s)
