@@ -186,7 +186,9 @@ char *argv[];
                     //return 0;
                     break;
                 }
-                if(collate<1 && report<1){
+                if(collate != 1 && report != 1){
+                    fprintf(stderr, "Invalid positional argument selection.\n\n");
+                        usage(argv[0]);
                   return 0;
 
                 }
