@@ -71,11 +71,11 @@ static struct option_info {
 
  {OUTPUT,         "output",    'o',      required_argument, "outfile",
                   "Write Output to file, rather than standard output."},
-  {0,         NULL,    '\0',      0, NULL,
-                  NULL}
+  {0,         0,    0,      0, 0,
+                  0}
 };
 
-#define NUM_OPTIONS (14)
+#define NUM_OPTIONS (15)
 
 static char *short_options;
 static struct option long_options[NUM_OPTIONS];
@@ -94,7 +94,7 @@ static void init_options() {
         op->flag = NULL;
         op->val = oip->val;
     }
-    short_options = "rcank:o:";
+    short_options = "r::c::ank:o:";
 
 }
 
@@ -125,10 +125,12 @@ char *argv[];
 
                 case 'r':
                 case REPORT:
+                if(optind>= argc) return 0;
                 report++;
                 break;
                 case 'c':
                 case COLLATE:
+                if(optind>= argc) return 0;
                 collate++;
                 break;
                 case TABSEP:
@@ -140,7 +142,7 @@ char *argv[];
                 break;
                 case 'k':
                 case SORTBY:
-
+                    if(optind>= argc) usage(argv[0]);
                     if(!strcmp(optarg, "name"))
                         compare = comparename;
                     else if(!strcmp(optarg, "id"))
@@ -186,7 +188,8 @@ char *argv[];
                     //return 0;
                     break;
                 }
-                if(collate != 1 && report != 1){
+                if(optind>= argc) usage(argv[0]);
+                if(collate < 1 && report < 1){
                     fprintf(stderr, "Invalid positional argument selection.\n\n");
                         usage(argv[0]);
                   return 0;
