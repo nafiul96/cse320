@@ -124,14 +124,23 @@ char *argv[];
                 switch(optval) {
 
                 case 'r':
-                case REPORT: report++; break;
+                case REPORT:
+                report++;
+                break;
                 case 'c':
-                case COLLATE: collate++; break;
-                case TABSEP: tabsep++; break;
+                case COLLATE:
+                collate++;
+                break;
+                case TABSEP:
+                tabsep++;
+                break;
                 case 'n':
-                case NONAMES: nonames++; break;
+                case NONAMES:
+                nonames++;
+                break;
                 case 'k':
                 case SORTBY:
+
                     if(!strcmp(optarg, "name"))
                         compare = comparename;
                     else if(!strcmp(optarg, "id"))
@@ -170,9 +179,16 @@ char *argv[];
                     break;
                 case '?':
                     usage(argv[0]);
+                    return 0;
                     break;
                 default:
+                    //usage(argv[0]);
+                    //return 0;
                     break;
+                }
+                if(collate<1 && report<1){
+                  return 0;
+
                 }
             } else {
                 break;
