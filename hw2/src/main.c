@@ -113,6 +113,7 @@ char *argv[];
         extern int errors, warnings;
         char optval;
         int (*compare)() = comparename;
+        //int pos = 0; int opt=0;
         //short_options = "rcanko";
         fprintf(stderr, BANNER);
         init_options();
