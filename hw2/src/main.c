@@ -70,28 +70,36 @@ static struct option_info {
                   "Sort by {name, id, score}."},
 
  {OUTPUT,         "output",    'o',      required_argument, "outfile",
-                  "Write Output to file, rather than standard output."}
+                  "Write Output to file, rather than standard output."},
+  {0,         NULL,    '\0',      0, NULL,
+                  NULL}
 };
 
 #define NUM_OPTIONS (14)
 
-static char *short_options = "";
+static char *short_options;
 static struct option long_options[NUM_OPTIONS];
 
 static void init_options() {
+
+
     for(unsigned int i = 0; i < NUM_OPTIONS; i++) {
+
+
         struct option_info *oip = &option_table[i];
         struct option *op = &long_options[i];
+
         op->name = oip->name;
-        //op->chr = oip->chr;
         op->has_arg = oip->has_arg;
         op->flag = NULL;
         op->val = oip->val;
     }
+    short_options = "rcank:o:";
+
 }
 
 static int report, collate, freqs, quantiles, summaries, moments,
-           scores, composite, histograms, tabsep, nonames;
+           scores, composite, histograms, tabsep, nonames, output;
 
 static void usage();
 
@@ -99,12 +107,13 @@ int main(argc, argv)
 int argc;
 char *argv[];
 {
+        char *fileptr;
         Course *c;
         Stats *s;
         extern int errors, warnings;
         char optval;
         int (*compare)() = comparename;
-
+        //short_options = "rcanko";
         fprintf(stderr, BANNER);
         init_options();
         if(argc <= 1) usage(argv[0]);
@@ -112,10 +121,15 @@ char *argv[];
         while(optind < argc) {
             if((optval = getopt_long(argc, argv, short_options, long_options, NULL)) != -1) {
                 switch(optval) {
+
+                case 'r':
                 case REPORT: report++; break;
+                case 'c':
                 case COLLATE: collate++; break;
                 case TABSEP: tabsep++; break;
+                case 'n':
                 case NONAMES: nonames++; break;
+                case 'k':
                 case SORTBY:
                     if(!strcmp(optarg, "name"))
                         compare = comparename;
@@ -130,6 +144,17 @@ char *argv[];
                         usage(argv[0]);
                     }
                     break;
+                case 'o':
+                case OUTPUT:
+                    fileptr = optarg;
+                    if(fileptr ==NULL){
+                        fprintf(stderr,
+                              "Option '%s' requires argument, name of the text file.\n\n",
+                                 option_table[(int)optval].name);
+                        usage(argv[0]);
+                     }
+                    //file=optarg;
+                    output++;   break;
                 case FREQUENCIES: freqs++; break;
                 case QUANTILES: quantiles++; break;
                 case SUMMARIES: summaries++; break;
@@ -137,6 +162,7 @@ char *argv[];
                 case COMPOSITES: composite++; break;
                 case INDIVIDUALS: scores++; break;
                 case HISTOGRAMS: histograms++; break;
+                case 'a':
                 case ALLOUTPUT:
                     freqs++; quantiles++; summaries++; moments++;
                     composite++; scores++; histograms++; tabsep++;
@@ -157,6 +183,9 @@ char *argv[];
         }
 
         char *ifile = argv[optind];
+
+
+
         if(report == collate) {
                 fprintf(stderr, "Exactly one of '%s' or '%s' is required.\n\n",
                         option_table[REPORT].name, option_table[COLLATE].name);
@@ -187,25 +216,45 @@ char *argv[];
         }
         sortrosters(c, compare);
 
+
+
+        // if(output) {
+        //         fprintf(stderr, "Dumping collated data...\n");
+        //         FILE *fpd;
+        //         writecourse(fpd, "a.txt");
+        //         exit(errors ? EXIT_FAILURE : EXIT_SUCCESS);
+        // }
+
+
+        FILE  *ofile= stdout;
+
+        if(output){
+            if((ofile=fopen(fileptr,"w")) == NULL)
+                fatal("Can't open output file %s.\n", fileptr);
+                fprintf(stderr, "[ %s", fileptr);
+                  }
         //stdout = fopen("a.dat","a");
         fprintf(stderr, "Producing reports...\n");
-        reportparams(stdout, ifile, c);
-        if(moments) reportmoments(stdout, s);
-        if(composite) reportcomposites(stdout, c, nonames);
-        if(freqs) reportfreqs(stdout, s);
-        if(quantiles) reportquantiles(stdout, s);
-        if(summaries) reportquantilesummaries(stdout, s);
-        if(histograms) reporthistos(stdout, c, s);
-        if(scores) reportscores(stdout, c, nonames);
+        reportparams(ofile, ifile, c);
+        if(moments) reportmoments(ofile, s);
+        if(composite) reportcomposites(ofile, c, nonames);
+        if(freqs) reportfreqs(ofile, s);
+        if(quantiles) reportquantiles(ofile, s);
+        if(summaries) reportquantilesummaries(ofile, s);
+        if(histograms) reporthistos(ofile, c, s);
+        if(scores) reportscores(ofile, c, nonames);
         //if(tabsep) reporttabs(stdout, c, nonames);
-        if(tabsep) reporttabs(stdout, c);
+        if(tabsep) reporttabs(ofile, c);
         //fclose(stdout);
         //free(c);
+        // if(output){
+        //   fclose(stdout);
+        // }
 
-
-
+        //fclose(stdout);
 
         fprintf(stderr, "\nProcessing complete.\n");
+        fclose(ofile);
         printf("%d warning%s issued.\n", warnings+errors,
                warnings+errors == 1? " was": "s were");
         exit(errors ? EXIT_FAILURE : EXIT_SUCCESS);
