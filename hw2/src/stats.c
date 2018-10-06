@@ -189,7 +189,7 @@ Freqs *afp;
         }
 
 
-        if(sfp == NULL) {       /* insertion into empty list */ //added malloc allocation
+        if(sfp == NULL) {       /* insertion into empty list */
                 sfp=newfreqs();
                 sfp->next = NULL;
                 sfp->score = scp->grade;
