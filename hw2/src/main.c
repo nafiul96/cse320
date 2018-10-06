@@ -192,8 +192,12 @@ char *argv[];
                 if(collate < 1 && report < 1){
                     fprintf(stderr, "Invalid positional argument selection.\n\n");
                         usage(argv[0]);
-                  return 0;
+//static int report, collate, freqs, quantiles, summaries, moments,
+//           scores, composite, histograms, tabsep, nonames, output;
 
+                }else if(collate>1 ||report>1){
+                    fprintf(stderr, "Invalid positional argument selection.\n\n");
+                        usage(argv[0]);
                 }
             } else {
                 break;
