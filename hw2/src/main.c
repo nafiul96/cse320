@@ -142,7 +142,7 @@ char *argv[];
                 break;
                 case 'k':
                 case SORTBY:
-                    if(optind>= argc) usage(argv[0]);
+                  //  if(optind>= argc) usage(argv[0]);
                     if(!strcmp(optarg, "name"))
                         compare = comparename;
                     else if(!strcmp(optarg, "id"))
@@ -150,9 +150,9 @@ char *argv[];
                     else if(!strcmp(optarg, "score"))
                         compare = comparescore;
                     else {
-                        fprintf(stderr,
-                                "Option '%s' requires argument from {name, id, score}.\n\n",
-                                option_table[(int)optval].name);
+                        // fprintf(stderr,
+                        //         "Option %p requires argument from {name, id, score}.\n\n",
+                        //         option_table[(int)optval].name);
                         usage(argv[0]);
                     }
                     break;
@@ -160,9 +160,9 @@ char *argv[];
                 case OUTPUT:
                     fileptr = optarg;
                     if(fileptr ==NULL){
-                        fprintf(stderr,
-                              "Option '%s' requires argument, name of the text file.\n\n",
-                                 option_table[(int)optval].name);
+                        // fprintf(stderr,
+                        //       "Option %p requires argument, name of the text file.\n\n",
+                        //          option_table[(int)optval].name);
                         usage(argv[0]);
                      }
                     //file=optarg;
@@ -190,13 +190,13 @@ char *argv[];
                 }
                 if(optind>= argc) usage(argv[0]);
                 if(collate < 1 && report < 1){
-                    fprintf(stderr, "Invalid positional argument selection.\n\n");
+                   // fprintf(stderr, "Invalid positional argument selection.\n\n");
                         usage(argv[0]);
 //static int report, collate, freqs, quantiles, summaries, moments,
 //           scores, composite, histograms, tabsep, nonames, output;
 
                 }else if(collate>1 ||report>1){
-                    fprintf(stderr, "Invalid positional argument selection.\n\n");
+                    //fprintf(stderr, "Invalid positional argument selection.\n\n");
                         usage(argv[0]);
                 }
             } else {
@@ -204,7 +204,7 @@ char *argv[];
             }
         }
         if(optind == argc) {
-                fprintf(stderr, "No input file specified.\n\n");
+              //  fprintf(stderr, "No input file specified.\n\n");
                 usage(argv[0]);
         }
 
