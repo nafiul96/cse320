@@ -42,7 +42,8 @@ void *sf_malloc(size_t size) {
 
 
     // check to see if the size is minimum
-    if(asize < 32) return NULL;
+    if(asize < 32)
+        asize = 32;
 
 
     bp = sf_mem_start();
@@ -101,11 +102,13 @@ void *sf_malloc(size_t size) {
         ftp->info.requested_size = 0;
 
         //creates new size group in the freelist and sets the block headers links
-        sf_free_list_node *ptr = sf_add_free_list(blocksz, &sf_free_list_head);
-        hdp->links.next  = &ptr->head;
-        hdp->links.next->links.prev = &ptr->head;
-        hdp->links.next->links.prev= hdp;
-        ptr->head.links.next = hdp;
+        // sf_free_list_node *ptr = //
+        sf_add_free_list(blocksz, &sf_free_list_head);
+        insert_to_list(&sf_free_list_head, hdp);
+        // hdp->links.next  = &ptr->head;
+        // hdp->links.next->links.prev = &ptr->head;
+        // hdp->links.next->links.prev= hdp;
+        // ptr->head.links.next = hdp;
 
     }
 
@@ -139,6 +142,7 @@ void *sf_malloc(size_t size) {
     placeIt( (void *)(bp), asize, size);
 
     return (bp+ sizeof(sf_block_info));
+    //return (bp+ sizeof(sf_header));
 
 
 
@@ -213,60 +217,33 @@ void placeIt(void* bp, size_t asize, size_t size){
         // not changing  prev_allocated
 
         // going into the next block
-        sf_header *temp = (bp+ asize);
+        sf_header *temp = (sf_header *)( (void*)(ptr)  + asize);
         temp->info.requested_size = 0;
-        temp->info.block_size = (csize - asize)>>4;
-        temp->info.two_zeroes = 0;
+        size_t bsz = (csize- asize);
+        temp->info.block_size = bsz>>4;
+        //temp->info.two_zeroes = 0;
         temp->info.allocated = 0;
         temp->info.prev_allocated = 1;
 
         //sf_footer *fpt = (bp+csize - sizeof(sf_footer));
-        sf_footer *fpt = (bp+csize - sizeof(sf_footer));
+        sf_footer *fpt = (sf_footer *)((void *)(ptr) + csize - sizeof(sf_footer));
         fpt->info.requested_size = 0;
-        fpt->info.block_size = (csize-asize)>>4;
-        fpt->info.two_zeroes = 0;
+        fpt->info.block_size = bsz>>4;
+        //fpt->info.two_zeroes = 0;
         fpt->info.allocated = 0;
         fpt->info.prev_allocated = 1;
 
-        sf_footer *next_head = (sf_footer *)((void*)(fpt) + sizeof(sf_footer));
+        sf_header *next_head = (sf_header *)((void*)(fpt) + sizeof(sf_footer));
         next_head->info.prev_allocated = 0;
 
-        //need to split and insert
-        sf_free_list_node *nptr = (sf_free_list_node *)(&sf_free_list_head);
-
-        for(nptr = nptr->next; nptr != &sf_free_list_head; nptr = nptr->next){
-            if(nptr->size ==(csize-asize)){
-
-                ptr->links.prev = &nptr->head;
-                ptr->links.next = nptr->head.links.next;
-                nptr->head.links.next->links.next = ptr;
-                nptr->head.links.next = ptr;
-                return ;
-            }
-        }
-
-        for(nptr = nptr->next; nptr != &sf_free_list_head; nptr= nptr->next){
-
-            if(nptr->size >=(csize-asize)){
-            break;
-            }
-        }
-
-
-
-        sf_free_list_node *node  = sf_add_free_list((csize-asize), nptr);
-
-        ptr->links.prev = node->head.links.next;
-        ptr->links.next = node->head.links.prev;
-        node->head.links.next->links.prev = ptr;
-        node->head.links.next = ptr;
-
+        insert_to_list(&sf_free_list_head, temp);
 
     }else{
 
         ptr->info.requested_size = size;
         ptr->info.allocated = 1;
         ptr->info.two_zeroes = 0;
+
 
     }
 
@@ -335,12 +312,15 @@ void *coalesce(void *bp){
 
 void remove_from_blocklist(sf_header *blockptr){
 
-    sf_header *curr = blockptr;
-    sf_header *prev =  blockptr->links.prev;
-    sf_header *next = blockptr->links.next;
+    // sf_header *curr = blockptr;
+    // sf_header *prev =  blockptr->links.prev;
+    // sf_header *next = blockptr->links.next;
 
-    prev->links.next = curr->links.next;
-    next->links.prev = prev;
+    // prev->links.next = curr->links.next;
+    // next->links.prev = prev;
+
+    blockptr->links.prev->links.next = blockptr->links.next;
+    blockptr->links.next->links.prev = blockptr->links.prev;
 }
 
 void pushblock(sf_header *head, sf_header *node){
