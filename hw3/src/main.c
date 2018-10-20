@@ -8,11 +8,18 @@ int main(int argc, char const *argv[]) {
 
     *ptr = 320320320e-320;
 
+
     printf("%f\n", *ptr);
 
     sf_free(ptr);
+    // printf("%x\n",sf_mem_start);
+    // printf("%x\n",sf_mem_end);
+    //int* bp = sf_mem_grow();
+    //printf("%d\n", *bp );
 
-    sf_mem_fini();
+    //sf_mem_fini();
+
+
 
     return EXIT_SUCCESS;
 }
