@@ -24,7 +24,6 @@ void insert_to_list(sf_free_list_node *node, sf_header *block);
 void *sf_malloc(size_t size) {
 
 
-
     // the adjusted size of the request
     size_t asize;
     void* bp;
@@ -54,7 +53,6 @@ void *sf_malloc(size_t size) {
             sf_errno = ENOMEM;
             return NULL;
         }
-
 
 
         //sets the prolog header for the heap
@@ -102,33 +100,33 @@ void *sf_malloc(size_t size) {
         ftp->info.requested_size = 0;
 
         //creates new size group in the freelist and sets the block headers links
-        // sf_free_list_node *ptr = //
         sf_add_free_list(blocksz, &sf_free_list_head);
         insert_to_list(&sf_free_list_head, hdp);
-        // hdp->links.next  = &ptr->head;
-        // hdp->links.next->links.prev = &ptr->head;
-        // hdp->links.next->links.prev= hdp;
-        // ptr->head.links.next = hdp;
+
 
     }
 
 
     // // search the free list for a best fit and place it
-    // if(  (bp = find_bestfit(asize)) != NULL){
 
-    //     placeIt( (void *)(bp), asize, size);
-    //     return (void*)bp+sizeof(sf_header);
-    // }
     while( (bp = find_bestfit(asize)) == NULL){
 
         if((bp = sf_mem_grow()) == NULL){
             sf_errno = ENOMEM;
             return NULL;
         }
-        //bp = bp - sizeof(sf_footer);
+        //block header
         sf_header  *hdp = (sf_header *)(bp - sizeof(sf_epilogue));
+        hdp->info.requested_size = 0;
         hdp->info.block_size = (PAGE_SZ)>>4;
         hdp->info.allocated = 0;
+
+        //block footer
+        sf_footer *bft =  (sf_footer *)(sf_mem_end()- sizeof(sf_epilogue) - sizeof(sf_footer));
+        bft->info.requested_size = 0;
+        bft->info.block_size = (PAGE_SZ)>>4;
+        bft->info.allocated = 0;
+        bft->info.prev_allocated = hdp->info.prev_allocated;
 
         sf_epilogue *eptr = (sf_epilogue *)(sf_mem_end()- sizeof(sf_epilogue));
         eptr->footer.info.allocated = 1;
@@ -142,13 +140,7 @@ void *sf_malloc(size_t size) {
     placeIt( (void *)(bp), asize, size);
 
     return (bp+ sizeof(sf_block_info));
-    //return (bp+ sizeof(sf_header));
 
-
-
-
-
-    //return NULL;
 }
 
 
@@ -168,8 +160,6 @@ void *find_bestfit(size_t size){
     if( ptr->next == &sf_free_list_head && ptr->prev == &sf_free_list_head)
         return NULL;
 
-    //pointer to traverse the list of lists
-    //ptr = &sf_free_list_head;
 
     // pointer to keep track of the address of the minimum fit
     sf_header  *temp;
@@ -185,10 +175,7 @@ void *find_bestfit(size_t size){
             }else{
 
                 sf_header *hp = temp->links.next;
-                temp->links.next = hp->links.next;
-                hp->links.next->links.prev = hp->links.prev;
-                // temp->links.prev->links.next = temp->links.next;
-                // temp->links.next->links.prev = temp->links.prev;
+                remove_from_blocklist(hp);
                 return hp;
             }
 
@@ -251,33 +238,34 @@ void placeIt(void* bp, size_t asize, size_t size){
 
 void *coalesce(void *bp){
 
+
     sf_header *curr = (sf_header *)(bp);
-    size_t blocksize = (curr->info.block_size)<<4;
-    sf_header *nextblock  = (sf_header *)(bp+ blocksize);
-    size_t prev_alloc = curr->info.prev_allocated;
-    size_t next_alloc = nextblock->info.allocated;
+    sf_block_info *current_inf = (sf_block_info *)((void*)(&curr->info));
+    sf_block_info *prev_inf = (sf_block_info *)(  (void*)(curr) - sizeof(sf_footer));
+    sf_block_info *next_inf = (sf_block_info *)((void*)(curr)  + ((curr->info.block_size)<<4));
 
 
-    if(prev_alloc && next_alloc){
+    if(prev_inf->allocated && next_inf->allocated){
         return bp;
 
-    }else if( prev_alloc && !next_alloc){
+    }else if( prev_inf->allocated && !next_inf->allocated){
 
-        size_t newsize = ((curr->info.block_size)<<4) + ((nextblock->info.block_size)<<4);
+
+        sf_header *nextblock = (sf_header *)( bp + ((current_inf->block_size)<<4));
+        size_t newsize = ((current_inf->block_size)<<4) + ((next_inf->block_size)<<4);
         remove_from_blocklist(curr);
         remove_from_blocklist(nextblock);
-        sf_footer *blockfooter  = (sf_footer *)((void *)(nextblock) + ((nextblock->info.block_size)<<4) - sizeof(sf_footer));
+        curr->info.block_size = (newsize>>4);
+        sf_footer *blockfooter =  (sf_footer *)((void *)(nextblock) + ((next_inf->block_size)<<4) - sizeof(sf_footer));
         blockfooter->info.block_size = newsize>>4;
         insert_to_list(&sf_free_list_head, curr);
 
 
-    }else if(!prev_alloc && next_alloc){
+    }else if(!prev_inf->allocated && next_inf->allocated){
 
         //merge with the previous block
-        sf_block_info *previnfo = (sf_block_info *)(bp - sizeof(sf_footer));
-        blocksize =previnfo->block_size;
-        sf_header *prevblock = (sf_header *)(bp - blocksize);
-        size_t newsize = ((previnfo->block_size)<<4) + ((curr->info.block_size)<<4);
+        sf_header *prevblock = (sf_header *)(bp - ((prev_inf->block_size)<<4)  );
+        size_t newsize = ((prev_inf->block_size)<<4) + ((curr->info.block_size)<<4);
         remove_from_blocklist(prevblock);
         remove_from_blocklist(curr);
         prevblock->info.block_size = (newsize>>4);
@@ -288,20 +276,20 @@ void *coalesce(void *bp){
 
     }else{
 
-        //mege both of the blocks
-        sf_block_info *previnfo = (sf_block_info *)(bp - sizeof(sf_footer));
-        blocksize =previnfo->block_size;
-        sf_header *prevblock = (sf_header *)(bp - blocksize);
-        size_t newsize = ((previnfo->block_size)<<4) + ((curr->info.block_size)<<4) + ((nextblock->info.block_size)<<4);
+        sf_header *prevblock = (sf_header *)(bp - ((prev_inf->block_size)<<4));
+        sf_header *nextblock = (sf_header *)( bp + ((current_inf->block_size)<<4));
+
+        size_t newsize = ((prev_inf->block_size)<<4) + ((curr->info.block_size)<<4) + ((next_inf->block_size)<<4);
         remove_from_blocklist(prevblock);
         remove_from_blocklist(curr);
         remove_from_blocklist(nextblock);
-        prevblock->info.block_size = (newsize>>4);
-        sf_footer *blockfooter  = (sf_footer *)((void *)(nextblock) + ((nextblock->info.block_size)<<4) - sizeof(sf_footer));
+
+        prevblock->info.block_size = newsize>>4;
+        sf_footer *blockfooter =  (sf_footer *)((void *)(nextblock) + ((next_inf->block_size)<<4) - sizeof(sf_footer));
         blockfooter->info.block_size = newsize>>4;
+        insert_to_list(&sf_free_list_head, curr);
         curr = prevblock;
         insert_to_list(&sf_free_list_head, curr);
-
     }
 
 
@@ -311,13 +299,6 @@ void *coalesce(void *bp){
 
 
 void remove_from_blocklist(sf_header *blockptr){
-
-    // sf_header *curr = blockptr;
-    // sf_header *prev =  blockptr->links.prev;
-    // sf_header *next = blockptr->links.next;
-
-    // prev->links.next = curr->links.next;
-    // next->links.prev = prev;
 
     blockptr->links.prev->links.next = blockptr->links.next;
     blockptr->links.next->links.prev = blockptr->links.prev;
@@ -333,7 +314,6 @@ void pushblock(sf_header *head, sf_header *node){
     curr->links.prev = head;
     prev->links.next = node;
     next->links.prev = node;
-
 
 }
 
