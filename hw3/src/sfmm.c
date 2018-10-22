@@ -32,7 +32,9 @@ void *sf_malloc(size_t size) {
     if(size <= 0) return  NULL;
 
 
-    asize  =  size + sizeof(sf_header);
+    //asize  =  size + sizeof(sf_header);
+
+    asize  =  size + sizeof(sf_block_info);
 
 
     //check to see if the size is a multiple of 16
@@ -208,7 +210,7 @@ void placeIt(void* bp, size_t asize, size_t size){
         temp->info.requested_size = 0;
         size_t bsz = (csize- asize);
         temp->info.block_size = bsz>>4;
-        //temp->info.two_zeroes = 0;
+        temp->info.two_zeroes = 0;
         temp->info.allocated = 0;
         temp->info.prev_allocated = 1;
 
@@ -216,7 +218,7 @@ void placeIt(void* bp, size_t asize, size_t size){
         sf_footer *fpt = (sf_footer *)((void *)(ptr) + csize - sizeof(sf_footer));
         fpt->info.requested_size = 0;
         fpt->info.block_size = bsz>>4;
-        //fpt->info.two_zeroes = 0;
+        fpt->info.two_zeroes = 0;
         fpt->info.allocated = 0;
         fpt->info.prev_allocated = 1;
 
@@ -245,10 +247,10 @@ void *coalesce(void *bp){
     sf_block_info *next_inf = (sf_block_info *)((void*)(curr)  + ((curr->info.block_size)<<4));
 
 
-    if(prev_inf->allocated && next_inf->allocated){
+    if(current_inf->prev_allocated && next_inf->allocated){
         return bp;
 
-    }else if( prev_inf->allocated && !next_inf->allocated){
+    }else if( current_inf->prev_allocated && !next_inf->allocated){
 
 
         sf_header *nextblock = (sf_header *)( bp + ((current_inf->block_size)<<4));
@@ -261,7 +263,7 @@ void *coalesce(void *bp){
         insert_to_list(&sf_free_list_head, curr);
 
 
-    }else if(!prev_inf->allocated && next_inf->allocated){
+    }else if(!current_inf->prev_allocated && next_inf->allocated){
 
         //merge with the previous block
         sf_header *prevblock = (sf_header *)(bp - ((prev_inf->block_size)<<4)  );
@@ -306,14 +308,20 @@ void remove_from_blocklist(sf_header *blockptr){
 
 void pushblock(sf_header *head, sf_header *node){
 
-    sf_header *next = head->links.next->links.next;
-    sf_header *prev = head;
-    sf_header *curr= node;
 
-    curr->links.next  = next;
-    curr->links.prev = head;
-    prev->links.next = node;
-    next->links.prev = node;
+    node->links.next = head->links.next;
+    node->links.next->links.prev = node;
+    node->links.prev = head;
+    head->links.next = node;
+
+    // sf_header *next = head->links.next->links.next;
+    // sf_header *prev = head;
+    // sf_header *curr= node;
+
+    // curr->links.next  = next;
+    // curr->links.prev = head;
+    // prev->links.next = node;
+    // next->links.prev = node;
 
 }
 
@@ -350,7 +358,7 @@ void insert_to_list(sf_free_list_node *node, sf_header *block){
 
     for(node = node->next; node != &sf_free_list_head; node = node->next){
 
-        if(node->size >= ((block->info.block_size)<<4)){
+        if(node->size > ((block->info.block_size)<<4)){
             break;
         }
     }
@@ -361,17 +369,6 @@ void insert_to_list(sf_free_list_node *node, sf_header *block){
 
 
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -429,6 +426,7 @@ void sf_free(void *pp) {
     ftr->info.block_size = blocksize>>4;
     ftr->info.requested_size = 0;
     ftr->info.allocated = 0;
+    ftr->info.prev_allocated = ptr->info.prev_allocated;
     ftr->info.two_zeroes = 0;
 
     insert_to_list(&sf_free_list_head, ptr);
@@ -437,6 +435,71 @@ void sf_free(void *pp) {
     return;
 }
 
+
+
+
 void *sf_realloc(void *pp, size_t rsize) {
+
+    return  NULL;
+
+    if(rsize <= 0)
+        return NULL;
+
+    // check if pointer is null
+    if(pp == NULL)
+        abort();
+
+    sf_header  *ptr = (sf_header *)(pp - sizeof(sf_block_info));
+
+    //header of the block is bfr end of prolog or after beginning epilog
+    if( (void *)ptr < (sf_mem_start()+sizeof(sf_prologue)))
+        abort();
+
+    if((void *)ptr >= (sf_mem_end() - sizeof(sf_epilogue)))
+        abort();
+
+
+    //allocated bit in the header or footer is zero
+    if(ptr->info.allocated == 0)
+        abort();
+
+    //blocksize ins not mutiple of 16 or less than minimum=32
+    if( (((ptr->info.block_size)<<4)%16 != 0 ) ||  (((ptr->info.block_size)<<4) <32))
+        abort();
+
+    // requested_sz + sizeof(blockheader) > block_size
+    if(   (ptr->info.requested_size+ sizeof(sf_block_info)) >  ((ptr->info.block_size)<<4))
+        abort();
+
+
+    //if prev_alloc ==0 check alloc fields of header and footer
+    if(ptr->info.prev_allocated == 0){
+
+        sf_footer *prev_footer = (sf_footer *)( (void *)(ptr) - sizeof(sf_footer));
+        sf_header *prev = (sf_header *)( (void *)(ptr) - ( (prev_footer->info.block_size)<<4));
+
+        if(prev->info.allocated != 0  || prev_footer->info.allocated != 0)
+            abort();
+    }
+
+    if(rsize == ptr->info.requested_size){
+        return pp;
+    }else if(rsize > ptr->info.requested_size){
+        //call malloc and copy memory
+        void *newptr = sf_malloc(rsize);
+        size_t sz =  ((ptr->info.block_size)<<4) - sizeof(sf_block_info) - sizeof(sf_footer);
+        memcpy(newptr, pp, sz);
+        return newptr;
+    }else{
+
+        size_t sz = rsize + sizeof(sf_header);
+        if(sz%16){}
+
+    }
+
+
+
+
+
     return NULL;
 }
