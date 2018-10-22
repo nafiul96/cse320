@@ -224,10 +224,10 @@ void placeIt(void* bp, size_t asize, size_t size){
 
         sf_header *next_head = (sf_header *)((void*)(fpt) + sizeof(sf_footer));
         next_head->info.prev_allocated = 0;
-        if(!next_head->info.allocated){
-            sf_footer *nft = (sf_footer *)(  (void *)(next_head) + ((next_head->info.block_size)<<4)    );
-            nft->info.prev_allocated = 0;
-        }
+        // if(!next_head->info.allocated){
+        //     sf_footer *nft = (sf_footer *)(  (void *)(next_head) + ((next_head->info.block_size)<<4)    );
+        //     nft->info.prev_allocated = 0;
+        // }
 
 
 
@@ -501,9 +501,17 @@ void *sf_realloc(void *pp, size_t rsize) {
 
         if(sz<32){
             sz= 32;
+            //return pp;
         }
 
-        if(  ((((ptr->info.block_size)<<4) -sz) > 32)){
+        if( (((ptr->info.block_size)<<4) -sz)<32   ){
+            ptr->info.requested_size = rsize;
+          // sf_footer *footer = (sf_footer *)( (void *)(ptr) + ((ptr->info.block_size)<<4) - sizeof(sf_footer));
+          // footer->info.requested_size = 32;
+            return pp;
+        }
+
+        if(  ((((ptr->info.block_size)<<4) -sz) >= 32)){
 
             size_t alc = sz;
             size_t fr = (((ptr->info.block_size)<<4) -sz);
@@ -531,13 +539,13 @@ void *sf_realloc(void *pp, size_t rsize) {
             coalesce(freeblock);
 
             return  pp;
-        }else{
+        }//else{
 
-            //ptr->info.requested_size = 32;
-            //sf_footer *footer = (sf_footer *)( (void *)(ptr) + ((ptr->info.block_size)<<4) - sizeof(sf_footer));
-            //footer->info.requested_size = 32;
-            return pp;
-        }
+        //    // ptr->info.requested_size = 32;
+        //    // sf_footer *footer = (sf_footer *)( (void *)(ptr) + ((ptr->info.block_size)<<4) - sizeof(sf_footer));
+        //    // footer->info.requested_size = 32;
+        //     return pp;
+        // }
 
     }
 
@@ -545,5 +553,5 @@ void *sf_realloc(void *pp, size_t rsize) {
 
 
 
-    //return NULL;
+    return NULL;
 }
