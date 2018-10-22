@@ -224,6 +224,12 @@ void placeIt(void* bp, size_t asize, size_t size){
 
         sf_header *next_head = (sf_header *)((void*)(fpt) + sizeof(sf_footer));
         next_head->info.prev_allocated = 0;
+        if(!next_head->info.allocated){
+            sf_footer *nft = (sf_footer *)(  (void *)(next_head) + ((next_head->info.block_size)<<4)    );
+            nft->info.prev_allocated = 0;
+        }
+
+
 
         insert_to_list(&sf_free_list_head, temp);
 
@@ -314,15 +320,6 @@ void pushblock(sf_header *head, sf_header *node){
     node->links.prev = head;
     head->links.next = node;
 
-    // sf_header *next = head->links.next->links.next;
-    // sf_header *prev = head;
-    // sf_header *curr= node;
-
-    // curr->links.next  = next;
-    // curr->links.prev = head;
-    // prev->links.next = node;
-    // next->links.prev = node;
-
 }
 
 
@@ -354,7 +351,7 @@ void insert_to_list(sf_free_list_node *node, sf_header *block){
     }
 
 
-    node = &sf_free_list_head;
+    node = (sf_free_list_node *)(&sf_free_list_head);
 
     for(node = node->next; node != &sf_free_list_head; node = node->next){
 
@@ -440,10 +437,12 @@ void sf_free(void *pp) {
 
 void *sf_realloc(void *pp, size_t rsize) {
 
-    return  NULL;
+   // return  NULL;
 
-    if(rsize <= 0)
+    if(rsize <= 0){
+        sf_free(pp);
         return NULL;
+    }
 
     // check if pointer is null
     if(pp == NULL)
@@ -487,13 +486,58 @@ void *sf_realloc(void *pp, size_t rsize) {
     }else if(rsize > ptr->info.requested_size){
         //call malloc and copy memory
         void *newptr = sf_malloc(rsize);
-        size_t sz =  ((ptr->info.block_size)<<4) - sizeof(sf_block_info) - sizeof(sf_footer);
-        memcpy(newptr, pp, sz);
+        if(newptr == NULL)
+            return NULL;
+        //size_t sz =  ((ptr->info.block_size)<<4) - sizeof(sf_block_info);
+        memcpy((void*)(newptr), (const void *)(pp), ptr->info.requested_size);
+        sf_free(pp);
         return newptr;
     }else{
 
-        size_t sz = rsize + sizeof(sf_header);
-        if(sz%16){}
+        size_t sz = rsize + sizeof(sf_block_info);
+        if(sz%16 != 0){
+            sz = sz+ (16 - sz%16);
+        }
+
+        if(sz<32){
+            sz= 32;
+        }
+
+        if(  ((((ptr->info.block_size)<<4) -sz) > 32)){
+
+            size_t alc = sz;
+            size_t fr = (((ptr->info.block_size)<<4) -sz);
+
+            sf_header *freeblock = (sf_header *)( (void *)(ptr) + alc);
+            freeblock->info.requested_size = 0;
+            freeblock->info.block_size = fr>>4;
+            freeblock->info.two_zeroes = 0;
+            freeblock->info.prev_allocated =1;
+            freeblock->info.allocated = 0;
+
+            ptr->info.requested_size = rsize;
+            ptr->info.block_size = alc>>4;
+            // ptr->info.two_zeroes = 0;
+            // ptr->info.allocated = 1;
+
+            sf_footer *freefooter = (sf_footer *)((void *)(freeblock) +  ((freeblock->info.block_size)<<4) - sizeof(sf_footer));
+            freefooter->info.requested_size = 0;
+            freefooter->info.block_size = fr>>4;
+            freefooter->info.two_zeroes = 0;
+            freefooter->info.prev_allocated = 1;
+            freefooter->info. allocated = 0;
+
+            insert_to_list(&sf_free_list_head, freeblock);
+            coalesce(freeblock);
+
+            return  pp;
+        }else{
+
+            //ptr->info.requested_size = 32;
+            //sf_footer *footer = (sf_footer *)( (void *)(ptr) + ((ptr->info.block_size)<<4) - sizeof(sf_footer));
+            //footer->info.requested_size = 32;
+            return pp;
+        }
 
     }
 
@@ -501,5 +545,5 @@ void *sf_realloc(void *pp, size_t rsize) {
 
 
 
-    return NULL;
+    //return NULL;
 }
