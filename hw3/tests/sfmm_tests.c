@@ -200,3 +200,47 @@ Test(sf_memsuite_student, realloc_smaller_block_free_block, .init = sf_mem_init,
 //DO NOT DELETE THESE COMMENTS
 //############################################
 
+Test(sf_memsuite_student, pointer_check_abort, .init = sf_mem_init, .fini = sf_mem_fini, .signal = SIGABRT) {
+	sf_errno = 0;
+	//void *x = sf_malloc(sizeof(int));
+	char *ptr = "c";
+	sf_free(ptr);
+	//sf_free(x);
+}
+
+Test(sf_memsuite_student, free_block_bit_check, .init = sf_mem_init, .fini = sf_mem_fini, .signal = SIGABRT) {
+	sf_errno = 0;
+	void *x = sf_malloc(sizeof(int));
+	sf_malloc(23);
+	sf_free(sf_malloc(2000000));
+	sf_free(sf_mem_start());
+	sf_block_info *binfo = (x - sizeof(sf_block_info));
+	sf_footer *footer = (x+32- sizeof(sf_footer));
+	cr_assert(binfo->allocated == 0, "Allocated bit is not set!");
+	cr_assert(binfo->allocated==footer->info.allocated, "Footer and header bits does not match");
+
+}
+
+
+Test(sf_memsuite_student, check_twosided_coals_with_one_realloc, .init = sf_mem_init, .fini = sf_mem_fini) {
+	sf_errno = 0;
+	void *ptr[8];
+
+     for(int i=0; i<8; i++){
+        ptr[i] = sf_malloc(sizeof(double));
+     }
+
+     sf_free(ptr[2]);
+
+     sf_free(ptr[4]);
+
+     sf_free(ptr[5]);
+
+     ptr[5] = sf_realloc(ptr[3],1024);
+
+
+    assert_free_block_count(2);
+	assert_free_list_count(128, 1);
+	assert_free_list_count(2752, 1);
+
+}

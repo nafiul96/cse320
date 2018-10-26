@@ -224,10 +224,10 @@ void placeIt(void* bp, size_t asize, size_t size){
 
         sf_header *next_head = (sf_header *)((void*)(fpt) + sizeof(sf_footer));
         next_head->info.prev_allocated = 0;
-        // if(!next_head->info.allocated){
-        //     sf_footer *nft = (sf_footer *)(  (void *)(next_head) + ((next_head->info.block_size)<<4)    );
-        //     nft->info.prev_allocated = 0;
-        // }
+        if(!next_head->info.allocated){
+            sf_footer *nft = (sf_footer *)(  (void *)(next_head) + ((next_head->info.block_size)<<4)    );
+            nft->info.prev_allocated = 0;
+        }
 
 
 
@@ -238,6 +238,14 @@ void placeIt(void* bp, size_t asize, size_t size){
         ptr->info.requested_size = size;
         ptr->info.allocated = 1;
         ptr->info.two_zeroes = 0;
+
+        sf_header *nextblock = (sf_header *)((void *)(ptr) + ((ptr->info.block_size)<<4));
+        nextblock->info.prev_allocated = 1;
+        if(!nextblock->info.allocated){
+
+            sf_footer * nextftr = (sf_footer *)( (void *)(nextblock) + ((nextblock->info.block_size)<<4) - sizeof(sf_footer));
+            nextftr->info.prev_allocated = 1;
+        }
 
 
     }
@@ -258,7 +266,7 @@ void *coalesce(void *bp){
 
     }else if( current_inf->prev_allocated && !next_inf->allocated){
 
-
+        //merge with the next block
         sf_header *nextblock = (sf_header *)( bp + ((current_inf->block_size)<<4));
         size_t newsize = ((current_inf->block_size)<<4) + ((next_inf->block_size)<<4);
         remove_from_blocklist(curr);
@@ -266,6 +274,7 @@ void *coalesce(void *bp){
         curr->info.block_size = (newsize>>4);
         sf_footer *blockfooter =  (sf_footer *)((void *)(nextblock) + ((next_inf->block_size)<<4) - sizeof(sf_footer));
         blockfooter->info.block_size = newsize>>4;
+        blockfooter->info.prev_allocated = curr->info.prev_allocated; //newly added
         insert_to_list(&sf_free_list_head, curr);
 
 
@@ -279,6 +288,7 @@ void *coalesce(void *bp){
         prevblock->info.block_size = (newsize>>4);
         sf_footer *blockfooter  = (sf_footer *)((void *)(curr) + ((curr->info.block_size)<<4) - sizeof(sf_footer));
         blockfooter->info.block_size = newsize>>4;
+        blockfooter->info.prev_allocated = prevblock->info.prev_allocated; //newly added
         curr = prevblock;
         insert_to_list(&sf_free_list_head, curr);
 
@@ -295,7 +305,7 @@ void *coalesce(void *bp){
         prevblock->info.block_size = newsize>>4;
         sf_footer *blockfooter =  (sf_footer *)((void *)(nextblock) + ((next_inf->block_size)<<4) - sizeof(sf_footer));
         blockfooter->info.block_size = newsize>>4;
-        insert_to_list(&sf_free_list_head, curr);
+        blockfooter->info.prev_allocated = prevblock->info.prev_allocated; //newly added
         curr = prevblock;
         insert_to_list(&sf_free_list_head, curr);
     }
@@ -426,6 +436,15 @@ void sf_free(void *pp) {
     ftr->info.prev_allocated = ptr->info.prev_allocated;
     ftr->info.two_zeroes = 0;
 
+    // // modify the next block prev alloc bit
+     sf_header  *nextblock = (sf_header *)( (void *)(ftr) + sizeof(sf_footer));
+    nextblock->info.prev_allocated = 0;
+     if(!nextblock->info.allocated){
+         size_t nbs = nextblock->info.block_size<<4;
+         sf_footer *nf= (sf_footer *)( (void *)(nextblock) + nbs - sizeof(sf_footer));
+         nf->info.prev_allocated = 0;
+     }
+
     insert_to_list(&sf_free_list_head, ptr);
     ptr = coalesce((void*)(ptr));
 
@@ -482,6 +501,7 @@ void *sf_realloc(void *pp, size_t rsize) {
     }
 
     if(rsize == ptr->info.requested_size){
+
         return pp;
     }else if(rsize > ptr->info.requested_size){
         //call malloc and copy memory
@@ -490,6 +510,8 @@ void *sf_realloc(void *pp, size_t rsize) {
             return NULL;
         //size_t sz =  ((ptr->info.block_size)<<4) - sizeof(sf_block_info);
         memcpy((void*)(newptr), (const void *)(pp), ptr->info.requested_size);
+
+        //free takes care of the bit no worry
         sf_free(pp);
         return newptr;
     }else{
@@ -506,8 +528,8 @@ void *sf_realloc(void *pp, size_t rsize) {
 
         if( (((ptr->info.block_size)<<4) -sz)<32   ){
             ptr->info.requested_size = rsize;
-          // sf_footer *footer = (sf_footer *)( (void *)(ptr) + ((ptr->info.block_size)<<4) - sizeof(sf_footer));
-          // footer->info.requested_size = 32;
+           sf_footer *footer = (sf_footer *)( (void *)(ptr) + ((ptr->info.block_size)<<4) - sizeof(sf_footer));
+           footer->info.requested_size = rsize;
             return pp;
         }
 
@@ -534,6 +556,18 @@ void *sf_realloc(void *pp, size_t rsize) {
             freefooter->info.two_zeroes = 0;
             freefooter->info.prev_allocated = 1;
             freefooter->info. allocated = 0;
+
+             //sf_header  *nextblock = (sf_header *)( (void *)(freefooter) + sizeof(sf_footer));
+             //   nextblock->info.prev_allocated = 0;
+            // // modify the next block prev alloc bit
+            sf_header  *nextblock = (sf_header *)( (void *)(freefooter) + sizeof(sf_footer));
+            nextblock->info.prev_allocated = 0;
+            if(!nextblock->info.allocated){
+                size_t nbs = nextblock->info.block_size<<4;
+                sf_footer *nf= (sf_footer *)( (void *)(nextblock) + nbs - sizeof(sf_footer));
+                nf->info.prev_allocated = 0;
+            }
+
 
             insert_to_list(&sf_free_list_head, freeblock);
             coalesce(freeblock);
