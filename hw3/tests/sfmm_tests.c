@@ -227,7 +227,7 @@ Test(sf_memsuite_student, check_twosided_coals_with_one_realloc, .init = sf_mem_
 	void *ptr[8];
 
      for(int i=0; i<8; i++){
-        ptr[i] = sf_malloc(sizeof(double));
+        ptr[i] = sf_malloc(sizeof(double)); //32
      }
 
      sf_free(ptr[2]);
@@ -242,5 +242,64 @@ Test(sf_memsuite_student, check_twosided_coals_with_one_realloc, .init = sf_mem_
     assert_free_block_count(2);
 	assert_free_list_count(128, 1);
 	assert_free_list_count(2752, 1);
+
+}
+
+
+Test(sf_memsuite_student, check_alternating_free, .init = sf_mem_init, .fini = sf_mem_fini){
+
+
+
+	void *ptr[20];
+
+     int i=0;
+     for(i=0; i < 20; i++){
+        ptr[i] = sf_malloc(8);
+     }
+
+
+     int j=0;
+     for(j=0; j<20; j++){
+
+        if(j%2==0){
+            sf_free(ptr[j]);
+
+        }
+     }
+
+     assert_free_block_count(11);
+	assert_free_list_count(32, 10);
+
+}
+
+
+Test(sf_memsuite_student, check_malloc_realloc_freeFour, .init = sf_mem_init, .fini = sf_mem_fini){
+
+
+
+	void *ptr[10];
+
+     for(int i=0; i<10; i++){
+        ptr[i] = sf_malloc(80);
+     }
+
+     for(int i=0; i<10; i++){
+        ptr[i] = sf_realloc(ptr[i],50);
+     }
+
+     for(int i=0; i<10;i++){
+
+        if(i%4 == 0){
+            sf_free(ptr[i]);
+        }
+     }
+
+
+     assert_free_block_count(8);
+	assert_free_list_count(32, 4);
+	assert_free_list_count(96, 1);
+	assert_free_list_count(128, 2);
+	assert_free_list_count(3120, 1);
+
 
 }
