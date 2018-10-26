@@ -200,14 +200,6 @@ Test(sf_memsuite_student, realloc_smaller_block_free_block, .init = sf_mem_init,
 //DO NOT DELETE THESE COMMENTS
 //############################################
 
-Test(sf_memsuite_student, pointer_check_abort, .init = sf_mem_init, .fini = sf_mem_fini, .signal = SIGABRT) {
-	sf_errno = 0;
-	//void *x = sf_malloc(sizeof(int));
-	char *ptr = "c";
-	sf_free(ptr);
-	//sf_free(x);
-}
-
 Test(sf_memsuite_student, free_block_bit_check, .init = sf_mem_init, .fini = sf_mem_fini, .signal = SIGABRT) {
 	sf_errno = 0;
 	void *x = sf_malloc(sizeof(int));
@@ -295,11 +287,24 @@ Test(sf_memsuite_student, check_malloc_realloc_freeFour, .init = sf_mem_init, .f
      }
 
 
+
+
+
      assert_free_block_count(8);
 	assert_free_list_count(32, 4);
 	assert_free_list_count(96, 1);
 	assert_free_list_count(128, 2);
 	assert_free_list_count(3120, 1);
+
+
+}
+
+Test(sf_memsuite_student, realloc_check_null, .init = sf_mem_init, .fini = sf_mem_fini) {
+	sf_errno = 0;
+	char *ptr = "c";
+	ptr = sf_realloc(ptr,12);
+	cr_assert(ptr == NULL, "ptr is not null!");
+	cr_assert(sf_errno == EINVAL, "sf_errno is not set");
 
 
 }

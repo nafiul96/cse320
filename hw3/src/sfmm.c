@@ -464,30 +464,42 @@ void *sf_realloc(void *pp, size_t rsize) {
     }
 
     // check if pointer is null
-    if(pp == NULL)
-        abort();
+    if(pp == NULL){
+        sf_errno = EINVAL;
+        return NULL;
+    }
 
     sf_header  *ptr = (sf_header *)(pp - sizeof(sf_block_info));
 
     //header of the block is bfr end of prolog or after beginning epilog
-    if( (void *)ptr < (sf_mem_start()+sizeof(sf_prologue)))
-        abort();
+    if( (void *)ptr < (sf_mem_start()+sizeof(sf_prologue))){
+        sf_errno = EINVAL;
+        return NULL;
+    }
 
-    if((void *)ptr >= (sf_mem_end() - sizeof(sf_epilogue)))
-        abort();
+    if((void *)ptr >= (sf_mem_end() - sizeof(sf_epilogue))){
+        sf_errno = EINVAL;
+        return NULL;
+    }
 
 
     //allocated bit in the header or footer is zero
-    if(ptr->info.allocated == 0)
-        abort();
+    if(ptr->info.allocated == 0){
+        sf_errno = EINVAL;
+        return NULL;
+    }
 
     //blocksize ins not mutiple of 16 or less than minimum=32
-    if( (((ptr->info.block_size)<<4)%16 != 0 ) ||  (((ptr->info.block_size)<<4) <32))
-        abort();
+    if( (((ptr->info.block_size)<<4)%16 != 0 ) ||  (((ptr->info.block_size)<<4) <32)){
+        sf_errno = EINVAL;
+        return NULL;
+    }
 
     // requested_sz + sizeof(blockheader) > block_size
-    if(   (ptr->info.requested_size+ sizeof(sf_block_info)) >  ((ptr->info.block_size)<<4))
-        abort();
+    if(   (ptr->info.requested_size+ sizeof(sf_block_info)) >  ((ptr->info.block_size)<<4)){
+        sf_errno = EINVAL;
+        return NULL;
+    }
 
 
     //if prev_alloc ==0 check alloc fields of header and footer
@@ -496,8 +508,10 @@ void *sf_realloc(void *pp, size_t rsize) {
         sf_footer *prev_footer = (sf_footer *)( (void *)(ptr) - sizeof(sf_footer));
         sf_header *prev = (sf_header *)( (void *)(ptr) - ( (prev_footer->info.block_size)<<4));
 
-        if(prev->info.allocated != 0  || prev_footer->info.allocated != 0)
-            abort();
+        if(prev->info.allocated != 0  || prev_footer->info.allocated != 0){
+            sf_errno = EINVAL;
+            return NULL;
+        }
     }
 
     if(rsize == ptr->info.requested_size){
