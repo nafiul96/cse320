@@ -315,7 +315,7 @@ void *coalesce(void *bp){
     return (bp=(void*)(curr));
 }
 
-
+//takes a block header and removes from blocklist
 void remove_from_blocklist(sf_header *blockptr){
 
     blockptr->links.prev->links.next = blockptr->links.next;
