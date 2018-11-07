@@ -6,6 +6,7 @@
 #include"string.h"
 #include"readline/readline.h"
 #include"malloc.h"
+#include "kyle.h"
 
 
 
@@ -14,25 +15,30 @@
  */
 void printCommand();
 void ctot(char bfr[], char **collector, int * tokensz);
+void all_printers(PRINTER *ptr[], int num);
 
 
-int inp =0, out = 0, quit = 0, tp = 0, printer = 0;
+int inp =0, out = 0, quit = 0, tp = 0, printer;
 
-char *env_type[1024];
+//char *env_type[1024];
+imp_node **env_type;
+
 PRINTER  *printers[32];
 
 
 int main(int argc, char *argv[])
 {
+    printer = 0;
+    env_type = malloc(1024 * 8);
 
-    //char *inputfile;
+    char *inputfile;
     char optval;
     while(optind < argc) {
 	if((optval = getopt(argc, argv, "i:o:")) != -1) {
 	    switch(optval) {
         case 'i':
         //get the file name
-       // inputfile = optarg;
+        inputfile = optarg;
         inp++;
         break;
         case 'o':
@@ -50,13 +56,13 @@ int main(int argc, char *argv[])
 
     }
 
-    //FILE *ifile;
+    FILE *ifile;
 
     if(inp){
-        // ifile = fopen(inputfile,"r");
-        // stdin = ifile;
+        ifile  = fopen(inputfile, "r");
+
     }
-    char*buffer;
+    char *buffer;
     char *collector[1024];
     int len =0;
 
@@ -64,9 +70,18 @@ int main(int argc, char *argv[])
 
         if(inp){
 
-            scanf("%[^\n]%*c", buffer);
-            if(*buffer == EOF){
+            // char buf[1024];
+            // fgets(buf,255,ifile);
+            // buffer  = buf;
+            fscanf(ifile, "%s", buffer);
+            printf("%s\n", buffer);
+            if(buffer == NULL || *buffer  == EOF){
+
                 break;
+            }else{
+
+                buffer = strtok(buffer,"\n");
+
             }
 
         }
@@ -79,47 +94,90 @@ int main(int argc, char *argv[])
         if(strcmp(collector[0],"help") == 0){
             printCommand();
 
+
         }else if(strcmp(collector[0],"quit") == 0){
             quit++;
 
+
+
         }else if(strcmp(collector[0],"type") == 0){
-            env_type[tp] = collector[1];
-            tp++;
+
+            if(len != 2){
+
+            }else{
+
+            if typeexists(){
+
+            }
+            imp_node *typeptr = malloc(sizeof(imp_node));
+            // search type graph to see if the type
+
+
+            typeptr->type = collector[1];
+            env_type[tp++] = typeptr;
+
+            }
 
 
 
         }else if(strcmp(collector[0],"printer")== 0){
-            printers[printer]->id = printer;
-            printers[printer]->name  = collector[1];
-            printers[printer]->type  = collector[2];
+
+            PRINTER *ptr = malloc(sizeof(PRINTER));
+            ptr->id = printer;
+            ptr->name  = collector[1];
+            ptr->type  = collector[2];
+            ptr->enabled = 1;
+            ptr->busy = 0;
+            printers[printer++] = ptr;
+
+
         }else if(strcmp(collector[0],"conversion")== 0){
-            printf("recognized:%s \n",buffer);
+
+
+
 
         }else if(strcmp(collector[0],"printers") == 0){
-            printf("recognized:%s \n",buffer);
+            all_printers(printers, printer);
+
+
 
         }else if(strcmp(collector[0],"jobs") == 0){
             printf("recognized:%s \n",buffer);
 
+
+
         }else if(strcmp(collector[0],"print") == 0){
             printf("recognized:%s \n",buffer);
+
+
 
         }else if(strcmp(collector[0],"cancel") == 0){
             printf("recognized:%s \n",buffer);
 
+
+
         }else if(strcmp(collector[0],"pause") == 0){
             printf("recognized:%s \n",buffer);
+
+
 
         }else if(strcmp(collector[0],"resume") == 0){
             printf("recognized:%s \n",buffer);
 
+
+
         }else if(strcmp(collector[0],"disable") == 0){
             printf("recognized:%s \n",buffer);
+
+
 
         }else if(strcmp(collector[0],"enable")== 0){
             printf("recognized:%s \n",buffer);
 
+
+
         }
+        free(buffer);
 
     }
 
@@ -167,5 +225,20 @@ void ctot(char bfr[], char **collector, int * tokensz){
     }
 
     *tokensz = i;
+}
+
+
+void all_printers(PRINTER *ptr[], int num){
+
+    for(int i=0; i<num; i++){
+        PRINTER *samsung = ptr[i];
+        char *buff = malloc(1024);
+        buff = imp_format_printer_status(samsung, buff, 1024);
+        printf("%s\n", buff);
+        free(buff);
+
+    }
+
+
 }
 
