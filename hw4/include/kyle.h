@@ -8,9 +8,21 @@
 typedef struct {
 
     char * type;
-    struct ss *head;
+    struct imp_node *head;
 
 
-}imp_node;
+}__attribute__((packed)) imp_node;
+
+
+
+int typeexists(imp_node *data[], char * inptype, int count );
+
+
+
+
+void printCommand();
+void ctot(char bfr[], char **collector, int * tokensz);
+void all_printers(PRINTER *ptr[], int num);
+
 
 #endif
