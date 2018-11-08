@@ -22,6 +22,7 @@ int inp =0, out = 0, quit = 0, tp, printer;
 
 //char *env_type[1024];
 imp_node **env_type;
+char ***matrix;
 
 PRINTER  *printers[32 * sizeof(PRINTER)];
 
@@ -32,6 +33,7 @@ int main(int argc, char *argv[])
     tp = 0;
 
     env_type = malloc(50 * sizeof(imp_node));
+    matrix = malloc(50 * 50 * sizeof(int));
 
    // char *inputfile;
     char optval;
@@ -70,23 +72,7 @@ int main(int argc, char *argv[])
     while(!quit){
 
 
-        //char *collector[1024];
-       //  if(inp){
 
-       //      fscanf(ifile, "%s", buffer);
-       //      printf("%s\n", buffer);
-       //      if(buffer == NULL || *buffer  == EOF){
-
-       //          break;
-       //      }else{
-
-       //          buffer = strtok(buffer,"\n");
-
-       //      }
-
-       //  }
-
-       // else{
             char *buffer = readline("imp>");
             char **collector = malloc(4048);
             ctot(buffer, collector,&len);
@@ -96,100 +82,140 @@ int main(int argc, char *argv[])
 
 
         if(strcmp(collector[0],"help") == 0){
-            printCommand();
+
+            if(len == 1){
+                printCommand();
+            }
 
 
         }else if(strcmp(collector[0],"quit") == 0){
-            quit++;
+
+            if(len == 1){
+                quit++;
+            }
 
 
 
         }else if(strcmp(collector[0],"type") == 0){
 
+            if(len == 2){
 
+                if(typeexists(env_type, collector[1], tp) < 0 ){
 
-                // che2ck to see if the type already exists
-                // typeexists(imp_node **data, char * inptype, int count )
-
-                if(typeexists(env_type, collector[1], tp)){
-                    //char *temp = malloc(sizeof(imp_node));
-                    //char *msg = "type already exists";
-                    //temp = imp_format_error_message(msg, temp, 255);
-                    //printf("%s\n", temp);
-                    //free(temp);
                 }else{
 
 
                     imp_node *typeptr = newtype();
-                    // possible mem leaks in this call during 6th add
                     char *tpy = malloc(1);
                     strcpy(tpy, collector[1]);
                     typeptr->type = tpy;
+                    typeptr->matrix_id = tp;
+                    matrix[tp] = 0;
                     env_type[tp++] = typeptr;
                     }
+                }else{
+                    //internal error occured!
+                }
 
         }else if(strcmp(collector[0],"printer")== 0){
 
 
             // verify the length
+            if(len == 3){
 
-            PRINTER *ptr = newprinter();
-            ptr->id = printer;
+                PRINTER *ptr = newprinter();
+                ptr->id = printer;
 
-            char *b = malloc(1);
-            char *c = malloc(1);
-            strcpy(b, collector[1]);
-            strcpy(c, collector[2]);
+                char *b = malloc(1);
+                char *c = malloc(1);
+                strcpy(b, collector[1]);
+                strcpy(c, collector[2]);
 
-            ptr->name  = b;
-            ptr->type  = c;
-            ptr->enabled = 1;
-            ptr->busy = 0;
-            printers[printer++] = ptr;
+                ptr->name  = b;
+                ptr->type  = c;
+                ptr->enabled = 1;
+                ptr->busy = 0;
+                printers[printer++] = ptr;
+            }
 
 
         }else if(strcmp(collector[0],"conversion")== 0){
+
+            // assumed to be working, needs to add conversion program!!!
+            if(len >=4){
+
+                int indx = typeexists(env_type, collector[1], tp);
+                int indy = typeexists(env_type, collector[2], tp);
+                if(indx>=0 && indy >= 0){
+                    char *edge = malloc(1);
+                    edge = "yes";
+                    matrix[indx][indy] = edge;
+                }
+
+            }
 
 
 
 
         }else if(strcmp(collector[0],"printers") == 0){
-            all_printers(printers, printer);
+
+            if(len == 1){
+                all_printers(printers, printer);
+            }
 
 
 
         }else if(strcmp(collector[0],"jobs") == 0){
-            printf("recognized:%s \n",buffer);
+
+            if(len== 1){
+                printf("recognized:%s \n",buffer);
+            }
 
 
 
         }else if(strcmp(collector[0],"print") == 0){
-            printf("recognized:%s \n",buffer);
+            if(len > 1){
+                printf("recognized:%s \n",buffer);
+            }
 
 
 
         }else if(strcmp(collector[0],"cancel") == 0){
-            printf("recognized:%s \n",buffer);
+            if(len ==2){
+                printf("recognized:%s \n",buffer);
+            }
 
 
 
         }else if(strcmp(collector[0],"pause") == 0){
-            printf("recognized:%s \n",buffer);
+
+            if(len == 2){
+                printf("recognized:%s \n",buffer);
+            }
 
 
 
         }else if(strcmp(collector[0],"resume") == 0){
-            printf("recognized:%s \n",buffer);
+
+            if(len == 2){
+                printf("recognized:%s \n",buffer);
+            }
 
 
 
         }else if(strcmp(collector[0],"disable") == 0){
-            printf("recognized:%s \n",buffer);
+
+            if(len == 2){
+                printf("recognized:%s \n",buffer);
+            }
 
 
 
         }else if(strcmp(collector[0],"enable")== 0){
-            printf("recognized:%s \n",buffer);
+
+            if(len == 2){
+                printf("recognized:%s \n",buffer);
+            }
 
 
 

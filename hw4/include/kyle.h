@@ -7,11 +7,17 @@
 
 typedef struct {
 
+    int matrix_id;
     char * type;
-    struct imp_node *head;
 
 
 }__attribute__((packed)) imp_node;
+
+
+
+
+
+
 
 
 

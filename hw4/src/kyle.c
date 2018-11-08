@@ -12,17 +12,17 @@
 void printCommand(){
 
     printf("Miscellaneous Commands\n");
-    printf("help \n quit\n");
-    printf("Configuration Commands \n");
-    printf("type file_name \n printer printer_name file_type \n");
-    printf("conversion file_type1 file_type2 coversion_program[arg1 arg2 ...] \n");
-    printf("Informational Commands \n printers \n jobs \n");
+    printf("help\nquit\n");
+    printf("Configuration Commands\n");
+    printf("type file_name\n printer printer_name file_type\n");
+    printf("conversion file_type1 file_type2 coversion_program[arg1 arg2 ...]\n");
+    printf("Informational Commands\nprinters\njobs\n");
     printf("Spooling Commands\n");
     printf("print file_name [printer1 printer2 ...]\n");
-    printf("cancel job_number \n");
-    printf("pause job_number \n");
-    printf("resume job_number \n");
-    printf("disable printer_name \n");
+    printf("cancel job_number\n");
+    printf("pause job_number\n");
+    printf("resume job_number\n");
+    printf("disable printer_name\n");
     printf("enable printer_name\n");
 
 
@@ -81,22 +81,23 @@ void all_printers(PRINTER *ptr[], int num){
 
 /*
 takes the array of recognizable types and its size, and user provided  type
-@returns 1 if the type already exists, o otherwise
+@returns the matrix_id if exists, else returns -1
 */
 
 int typeexists(imp_node *data[], char *inptype, int count ){
 
     if(count <= 0)
-        return 0;
+        return -1;
 
     for(int i=0; i< count; i++){
 
         imp_node *tmp = data[i];
 
         if( strcmp(tmp->type, inptype) == 0 ){
-            return 1;
+            return tmp->matrix_id;
         }
     }
 
-    return 0;
+    return -1;
 }
+
