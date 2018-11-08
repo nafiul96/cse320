@@ -79,6 +79,8 @@ void all_printers(PRINTER *ptr[], int num){
 
 
 
+
+
 /*
 takes the array of recognizable types and its size, and user provided  type
 @returns the matrix_id if exists, else returns -1

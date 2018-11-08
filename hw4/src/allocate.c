@@ -40,3 +40,33 @@ PRINTER *newprinter(){
 
 
 }
+
+void *newstring(int len){
+
+    void *p;
+    if((p = (void *)malloc(len)) == NULL){
+
+        char *buff = malloc(1024);
+        buff = imp_format_error_message(memerr, buff, 1024);
+        fprintf(stderr, "%s\n",buff);
+        free(buff);
+
+    }
+    return p;
+
+}
+
+conv *newprogram(){
+
+    conv *p;
+    if((p = (conv *)malloc(sizeof(conv))) == NULL){
+
+        char *buff = malloc(1024);
+        buff = imp_format_error_message(memerr, buff, 1024);
+        fprintf(stderr, "%s\n",buff);
+        free(buff);
+
+    }
+    return p;
+
+}

@@ -22,16 +22,16 @@ int inp =0, out = 0, quit = 0, tp, printer;
 
 //char *env_type[1024];
 imp_node **env_type;
-char ***matrix;
+conv ***matrix;
 
 PRINTER  *printers[32 * sizeof(PRINTER)];
-
+PRINTER_SET printer_set;
 
 int main(int argc, char *argv[])
 {
     printer = 0;
     tp = 0;
-
+    printer_set = 0;
     env_type = malloc(50 * sizeof(imp_node));
     matrix = malloc(50 * 50 * sizeof(int));
 
@@ -100,19 +100,20 @@ int main(int argc, char *argv[])
 
             if(len == 2){
 
-                if(typeexists(env_type, collector[1], tp) < 0 ){
+                if(typeexists(env_type, collector[1], tp) > 0 ){
 
                 }else{
 
 
                     imp_node *typeptr = newtype();
-                    char *tpy = malloc(1);
+                    char *tpy = newstring(strlen(collector[1]));
                     strcpy(tpy, collector[1]);
                     typeptr->type = tpy;
                     typeptr->matrix_id = tp;
                     matrix[tp] = 0;
                     env_type[tp++] = typeptr;
-                    }
+                }
+
                 }else{
                     //internal error occured!
                 }
@@ -123,32 +124,40 @@ int main(int argc, char *argv[])
             // verify the length
             if(len == 3){
 
-                PRINTER *ptr = newprinter();
-                ptr->id = printer;
+                if(typeexists(env_type,collector[2],tp) >=0){
+                    PRINTER *ptr = newprinter();
+                    ptr->id = printer;
 
-                char *b = malloc(1);
-                char *c = malloc(1);
-                strcpy(b, collector[1]);
-                strcpy(c, collector[2]);
+                    char *b = newstring(strlen(collector[1]));
+                    char *c = newstring(strlen(collector[2]));
+                    strcpy(b, collector[1]);
+                    strcpy(c, collector[2]);
 
-                ptr->name  = b;
-                ptr->type  = c;
-                ptr->enabled = 1;
-                ptr->busy = 0;
-                printers[printer++] = ptr;
+                    ptr->name  = b;
+                    ptr->type  = c;
+                    ptr->enabled = 1;
+                    ptr->busy = 0;
+                    printer_set  |= (1<<printer);
+                    printers[printer++] = ptr;
+                }
+
             }
 
 
         }else if(strcmp(collector[0],"conversion")== 0){
 
-            // assumed to be working, needs to add conversion program!!!
+            // assumed to be working
             if(len >=4){
 
                 int indx = typeexists(env_type, collector[1], tp);
                 int indy = typeexists(env_type, collector[2], tp);
+
                 if(indx>=0 && indy >= 0){
-                    char *edge = malloc(1);
-                    edge = "yes";
+                    conv *edge = newprogram();
+                    char *tmp_name = newstring(strlen(collector[3]));
+                    strcpy(tmp_name, collector[3]);
+                    edge->name = tmp_name;
+                    edge->args = NULL;
                     matrix[indx][indy] = edge;
                 }
 
