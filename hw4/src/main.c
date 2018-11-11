@@ -185,6 +185,13 @@ int main(int argc, char *argv[])
         }else if(strcmp(collector[0],"print") == 0){
             if(len > 1){
                 printf("recognized:%s \n",buffer);
+
+                //check conditions
+                pid_t rootProc = fork();
+                if (converter(NULL) != 0){
+                    printf("abort process%d\n", rootProc);
+                }
+
             }
 
 

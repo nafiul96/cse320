@@ -5,6 +5,14 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+// C program to demonstrate use of fork() and pipe()
+#include<stdio.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<string.h>
+#include<sys/wait.h>
+
 typedef struct {
 
     int matrix_id;
@@ -30,6 +38,7 @@ int typeexists(imp_node *data[], char * inptype, int count );
 void printCommand();
 void ctot(char bfr[], char **collector, int * tokensz);
 void all_printers(PRINTER *ptr[], int num);
+int converter(int pathlength);
 
 
 
