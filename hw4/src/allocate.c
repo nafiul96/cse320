@@ -3,6 +3,9 @@
 #include "imprimer.h"
 #include"stdlib.h"
 #include"stdio.h"
+
+
+
 char * memerr = "memerr";
 
 
@@ -68,5 +71,41 @@ conv *newprogram(){
 
     }
     return p;
+
+}
+
+
+JOB * newjob(){
+
+    JOB *p;
+    if((p = (JOB *)malloc(sizeof(JOB))) == NULL){
+
+        char *buff = malloc(1024);
+        buff = imp_format_error_message(memerr, buff, 1024);
+        fprintf(stderr, "%s\n",buff);
+        free(buff);
+
+    }
+    return p;
+
+
+
+}
+
+
+jobnode *newjobnode(){
+
+    jobnode *p;
+    if((p = (jobnode *)malloc(sizeof(jobnode))) == NULL){
+
+        char *buff = malloc(1024);
+        buff = imp_format_error_message(memerr, buff, 1024);
+        fprintf(stderr, "%s\n",buff);
+        free(buff);
+
+    }
+    return p;
+
+
 
 }

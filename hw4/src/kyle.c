@@ -7,11 +7,11 @@
 
 // C program to demonstrate use of fork() and pipe()
 #include <sys/types.h>
-       #include <sys/wait.h>
-       #include <stdio.h>
-       #include <stdlib.h>
-       #include <unistd.h>
-       #include <string.h>
+#include <sys/wait.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 #include <fcntl.h>              /* Obtain O_* constant definitions */
 #include <unistd.h>
 
@@ -42,17 +42,17 @@ void printCommand(){
 
 
 
-void ctot(char bfr[], char **collector, int * tokensz){
+void ctot(char bfr[], char **collector, int * tokensz, char *del){
 
     int i = 0;
-    char *p = strtok (bfr, " ");
+    char *p = strtok (bfr, del);
 
     // need to limit the number of elemnent the buffer can handle
 
     while(p != NULL){
 
         collector[i++] = p;
-        p = strtok(NULL, " ");
+        p = strtok(NULL, del);
     }
 
     *tokensz = i;
@@ -123,8 +123,8 @@ int converter(int pathlength){
     int pipes2[2];
 
     //set group id
-    if(setgpid(0,0) == -1)
-        exit(1);
+    // if(setgpid(0,0) == -1)
+    //     exit(1);
 
 
     pid_t id;
@@ -174,10 +174,10 @@ int converter(int pathlength){
     close(pipes2[0]);
     close(pipes2[1]);
     dup2(pipes[0], 0);
-    dup2(pipes2[1], connect_to_printer(NULL,0x0));
+    //dup2(pipes2[1], connect_to_printer(NULL,0x0));
 
 
-    for(i=0; i <)
+    //for(i=0; i <)
 
 
 
@@ -186,6 +186,9 @@ int converter(int pathlength){
     return 1;
 
 }
+
+
+
 
 
 

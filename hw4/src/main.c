@@ -9,6 +9,10 @@
 #include "kyle.h"
 #include "imprimer.h"
 #include "allocate.h"
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/time.h>
+
 
 
 
@@ -18,7 +22,7 @@
 
 
 
-int inp =0, out = 0, quit = 0, tp, printer;
+int inp =0, out = 0, quit = 0, tp, printer, job;
 
 //char *env_type[1024];
 imp_node **env_type;
@@ -32,8 +36,11 @@ int main(int argc, char *argv[])
     printer = 0;
     tp = 0;
     printer_set = 0;
+    job = 0;
     env_type = malloc(50 * sizeof(imp_node));
     matrix = malloc(50 * 50 * sizeof(int));
+
+    createQ();
 
    // char *inputfile;
     char optval;
@@ -75,7 +82,7 @@ int main(int argc, char *argv[])
 
             char *buffer = readline("imp>");
             char **collector = malloc(4048);
-            ctot(buffer, collector,&len);
+            ctot(buffer, collector,&len, " ");
 
        //}
 
@@ -177,7 +184,9 @@ int main(int argc, char *argv[])
         }else if(strcmp(collector[0],"jobs") == 0){
 
             if(len== 1){
-                printf("recognized:%s \n",buffer);
+
+                printjobs();
+
             }
 
 
@@ -187,12 +196,48 @@ int main(int argc, char *argv[])
                 printf("recognized:%s \n",buffer);
 
                 //check conditions
-                pid_t rootProc = fork();
-                if (converter(NULL) != 0){
-                    printf("abort process%d\n", rootProc);
-                }
+            //     pid_t rootProc = fork();
+            //     if (converter(NULL) != 0){
+            //         printf("abort process%d\n", rootProc);
+            //     }
+
+            // }
+
+                //testing the queue
+
+//                 typedef struct job {
+//     int jobid;                      /* Job ID of job. */
+//     JOB_STATUS status;              /* Status of job. */
+//     int pgid;                       /* Process group ID of conversion pipeline. */
+//     char *file_name;                /* Pathname of file to be printed. */
+//     char *file_type;                /* Type name of file to be printed. */
+//     PRINTER_SET eligible_printers;  /* Set of eligible printers for the job. */
+//     PRINTER *chosen_printer;        /* Printer chosen for this job. */
+//     struct timeval creation_time;   /* Time job was queued. */
+//     struct timeval change_time;     /* Time of last status change. */
+//     void *other_info;               /* You may store other info in this field. */
+// } JOB;
+
+
+
+
+                JOB *j = newjob();
+                j->jobid = job;
+                j->status = QUEUED;
+                j->pgid = job;
+                char *fname = newstring(strlen(collector[1]));
+                strcpy(fname, collector[1]);
+                j->file_type = fname;
+                j->eligible_printers = ANY_PRINTER;
+                j->chosen_printer = printers[0];
+                jobnode *node = newjobnode();
+                node->j = j;
+                insertjob(node);
+
 
             }
+
+
 
 
 

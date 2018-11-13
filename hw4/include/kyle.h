@@ -36,7 +36,7 @@ char **args;
 
 int typeexists(imp_node *data[], char * inptype, int count );
 void printCommand();
-void ctot(char bfr[], char **collector, int * tokensz);
+void ctot(char bfr[], char **collector, int * tokensz, char *del);
 void all_printers(PRINTER *ptr[], int num);
 int converter(int pathlength);
 
