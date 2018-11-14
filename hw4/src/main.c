@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include "graph.h"
 
 
 
@@ -25,8 +26,8 @@
 int inp =0, out = 0, quit = 0, tp, printer, job;
 
 //char *env_type[1024];
-imp_node **env_type;
-conv ***matrix;
+//imp_node **env_type;
+//conv ***matrix;
 
 PRINTER  *printers[32 * sizeof(PRINTER)];
 PRINTER_SET printer_set;
@@ -37,10 +38,13 @@ int main(int argc, char *argv[])
     tp = 0;
     printer_set = 0;
     job = 0;
-    env_type = malloc(50 * sizeof(imp_node));
-    matrix = malloc(50 * 50 * sizeof(int));
+   // env_type = malloc(50 * sizeof(imp_node));
+   // matrix = malloc(50 * 50 * sizeof(int));
+
+    g = creategraph();
 
     createQ();
+
 
    // char *inputfile;
     char optval;
@@ -50,7 +54,13 @@ int main(int argc, char *argv[])
         case 'i':
         //get the file name
         //inputfile = optarg;
-        inp++;
+        ifile = fopen(optarg,"r");
+        if(ifile == NULL){
+            fprintf(stderr, "error\n");
+        }else{
+            inp++;
+        }
+
         break;
         case 'o':
         // get the file name
@@ -78,7 +88,22 @@ int main(int argc, char *argv[])
 
     while(!quit){
 
+        // char *buffer;
+        // char **collector;
 
+        // if(inp){
+
+        //             buffer = malloc(4048);
+
+        //     if(      (buffer =fgets  ( buffer,  4048,  ifile)) != NULL){
+
+        //         collector = malloc(4048);
+        //         char * temp = strtok(buffer,"\n");
+        //         ctot(temp, collector,&len, " ");
+
+        //     }
+
+        // }else{
 
             char *buffer = readline("imp>");
             char **collector = malloc(4048);
@@ -107,18 +132,23 @@ int main(int argc, char *argv[])
 
             if(len == 2){
 
-                if(typeexists(env_type, collector[1], tp) > 0 ){
+                // if(typeexists(env_type, collector[1], tp) > 0 ){
+                if(findbytype(collector[1]) != NULL ){
+                    // show error message
 
                 }else{
 
 
-                    imp_node *typeptr = newtype();
-                    char *tpy = newstring(strlen(collector[1]));
-                    strcpy(tpy, collector[1]);
-                    typeptr->type = tpy;
-                    typeptr->matrix_id = tp;
-                    matrix[tp] = 0;
-                    env_type[tp++] = typeptr;
+                    gnode *temp = malloc(sizeof(gnode));
+                    populatenode(temp, collector[1]);
+                    addgnode(g, temp);
+                    // imp_node *typeptr = newtype();
+                    // char *tpy = newstring(strlen(collector[1]));
+                    // strcpy(tpy, collector[1]);
+                    // typeptr->type = tpy;
+                    // typeptr->matrix_id = tp;
+                    // matrix[tp] = 0;
+                    // env_type[tp++] = typeptr;
                 }
 
                 }else{
@@ -131,7 +161,10 @@ int main(int argc, char *argv[])
             // verify the length
             if(len == 3){
 
-                if(typeexists(env_type,collector[2],tp) >=0){
+                //if(typeexists(env_type,collector[2],tp) >=0){
+                if(findbytype(collector[2]) != NULL){
+
+
                     PRINTER *ptr = newprinter();
                     ptr->id = printer;
 
@@ -156,17 +189,20 @@ int main(int argc, char *argv[])
             // assumed to be working
             if(len >=4){
 
-                int indx = typeexists(env_type, collector[1], tp);
-                int indy = typeexists(env_type, collector[2], tp);
-
-                if(indx>=0 && indy >= 0){
-                    conv *edge = newprogram();
-                    char *tmp_name = newstring(strlen(collector[3]));
-                    strcpy(tmp_name, collector[3]);
-                    edge->name = tmp_name;
-                    edge->args = NULL;
-                    matrix[indx][indy] = edge;
+                if( linkme(collector[1], collector[2]) == 0){
+                    //show error message
                 }
+                // int indx = typeexists(env_type, collector[1], tp);
+                // int indy = typeexists(env_type, collector[2], tp);
+
+                // if(indx>=0 && indy >= 0){
+                //     conv *edge = newprogram();
+                //     char *tmp_name = newstring(strlen(collector[3]));
+                //     strcpy(tmp_name, collector[3]);
+                //     edge->name = tmp_name;
+                //     edge->args = NULL;
+                //     matrix[indx][indy] = edge;
+                // }
 
             }
 

@@ -1,6 +1,6 @@
  #include <stdlib.h>
 #include <stdio.h>
-#include "kyle.h"
+// #include "kyle.h"
 #include "string.h"
 #include "malloc.h"
 #include "imprimer.h"
@@ -97,22 +97,22 @@ takes the array of recognizable types and its size, and user provided  type
 @returns the matrix_id if exists, else returns -1
 */
 
-int typeexists(imp_node *data[], char *inptype, int count ){
+// int typeexists(imp_node *data[], char *inptype, int count ){
 
-    if(count <= 0)
-        return -1;
+//     if(count <= 0)
+//         return -1;
 
-    for(int i=0; i< count; i++){
+//     for(int i=0; i< count; i++){
 
-        imp_node *tmp = data[i];
+//         imp_node *tmp = data[i];
 
-        if( strcmp(tmp->type, inptype) == 0 ){
-            return tmp->matrix_id;
-        }
-    }
+//         if( strcmp(tmp->type, inptype) == 0 ){
+//             return tmp->matrix_id;
+//         }
+//     }
 
-    return -1;
-}
+//     return -1;
+// }
 
 
 int converter(int pathlength){

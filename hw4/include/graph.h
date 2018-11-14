@@ -1,109 +1,71 @@
 
-/**
- * Graph datastructure implemented using adjacency list
- */
+
+
+typedef struct node{
+    char *type;
+}node;
+
+typedef struct conv{
+    char *prog;
+    char **args;
+}conv;
+
+typedef struct adjNode{
+
+    node *n;
+    conv *conversion;
+
+    struct adjNode *next;
+
+}adjNode;
 
 
 
+typedef struct adjlist{
+    adjNode * head;
+
+}adjlist;
 
 
 
+typedef struct gnode{
+    node *n;
+    int degree;
+    int seen;
+    adjlist * list;
+    struct gnode *next;
 
-/**
- * Structures to hold the graph configurations:
- * graphnode
- * edge
- * edgelist
- */
+}gnode;
 
-
-/**
- * Utility Macros
- */
-
-#define VISITED 1
-#define NOT_VISITED 0
-
-
-typedef struct edgelist;
-
-
-/**
- * The node in the graph for the specific type
- * contains type, edgelist, and flag to check visited or not
- */
-typedef struct graphnode{
-
-char *type;
-struct edgelist *list;
-int visited;
-
-}graphnode;
-
-
-/**
- * represents edge of the graph node
- * contains node to which current node to be connected, a conversion program, and arguments for the program
- */
-typedef struct edge{
-
-    graphnode *gnode;
-    char *program;
-    char**args;
-
-}edge;
-
-
-
-/**
- * doubly circular linkedlist as edgelist for a graphnode
- */
-typedef struct edgelist{
-
-    edge *head;
-    edge *next;
-    edge *prev;
-
-
-}edgelist;
 
 
 typedef struct graph{
 
-    graphnode *head;
-    graphnode *next;
+    int v;
+    gnode *head;
 
 }graph;
 
 
 
-/**
- * Utility variables
- */
-int pathlength;
-int node_count;
-edgelist *bfs;
+graph *g;
 
+graph *creategraph();
 
+int addgnode(graph *g,gnode *node);
+gnode *findbytype(char *tp);
 
-/**
- * The methods for the graph to be implemented
- */
+int addgedge(gnode *to, gnode *from);
 
-void addNode(graphnode *node);
+void populatenode(gnode *gn, char *t);
 
-
-void addEdge(graphnode *from, graphnode *to);
-
-int pathexists(graphnode *from, *graphnode *to);
-
-edgelist *findpath(graphnode *start, graphnode *end);
-
-
-graphnode *findNode(char *type);
+int linkme(char *from, char *to);
 
 
 
 
+
+
+void printgraph(graph *g);
 
 

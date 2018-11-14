@@ -10,20 +10,20 @@ char * memerr = "memerr";
 
 
 
-imp_node *newtype(){
+// imp_node *newtype(){
 
-    imp_node *p;
+//     imp_node *p;
 
-    if((p = (imp_node *)malloc(sizeof(imp_node))) == NULL){
+//     if((p = (imp_node *)malloc(sizeof(imp_node))) == NULL){
 
-        char *buff = malloc(1024);
-        buff = imp_format_error_message(memerr, buff, 1024);
-        fprintf(stderr, "%s\n",buff);
-        free(buff);
+//         char *buff = malloc(1024);
+//         buff = imp_format_error_message(memerr, buff, 1024);
+//         fprintf(stderr, "%s\n",buff);
+//         free(buff);
 
-    }
-    return p;
-}
+//     }
+//     return p;
+// }
 
 
 
@@ -59,20 +59,20 @@ void *newstring(int len){
 
 }
 
-conv *newprogram(){
+// conv *newprogram(){
 
-    conv *p;
-    if((p = (conv *)malloc(sizeof(conv))) == NULL){
+//     conv *p;
+//     if((p = (conv *)malloc(sizeof(conv))) == NULL){
 
-        char *buff = malloc(1024);
-        buff = imp_format_error_message(memerr, buff, 1024);
-        fprintf(stderr, "%s\n",buff);
-        free(buff);
+//         char *buff = malloc(1024);
+//         buff = imp_format_error_message(memerr, buff, 1024);
+//         fprintf(stderr, "%s\n",buff);
+//         free(buff);
 
-    }
-    return p;
+//     }
+//     return p;
 
-}
+// }
 
 
 JOB * newjob(){
