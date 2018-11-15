@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include "graph.h"
+#include "<time.h>"
 
 
 
@@ -25,11 +26,8 @@
 
 int inp =0, out = 0, quit = 0, tp, printer, job;
 
-//char *env_type[1024];
-//imp_node **env_type;
-//conv ***matrix;
 
-PRINTER  *printers[32 * sizeof(PRINTER)];
+PRINTER  *printers[32];
 PRINTER_SET printer_set;
 
 int main(int argc, char *argv[])
@@ -38,8 +36,6 @@ int main(int argc, char *argv[])
     tp = 0;
     printer_set = 0;
     job = 0;
-   // env_type = malloc(50 * sizeof(imp_node));
-   // matrix = malloc(50 * 50 * sizeof(int));
 
     g = creategraph();
 
@@ -77,40 +73,15 @@ int main(int argc, char *argv[])
 
     }
 
-    // FILE *ifile;
-    // if(inp){
-    //     ifile  = fopen(inputfile, "r");
-    // }
-    //char *buffer;
-    //char **collector;
 
     int len =0;
 
     while(!quit){
 
-        // char *buffer;
-        // char **collector;
-
-        // if(inp){
-
-        //             buffer = malloc(4048);
-
-        //     if(      (buffer =fgets  ( buffer,  4048,  ifile)) != NULL){
-
-        //         collector = malloc(4048);
-        //         char * temp = strtok(buffer,"\n");
-        //         ctot(temp, collector,&len, " ");
-
-        //     }
-
-        // }else{
 
             char *buffer = readline("imp>");
             char **collector = malloc(4048);
             ctot(buffer, collector,&len, " ");
-
-       //}
-
 
 
         if(strcmp(collector[0],"help") == 0){
@@ -142,26 +113,20 @@ int main(int argc, char *argv[])
                     gnode *temp = malloc(sizeof(gnode));
                     populatenode(temp, collector[1]);
                     addgnode(g, temp);
-                    // imp_node *typeptr = newtype();
-                    // char *tpy = newstring(strlen(collector[1]));
-                    // strcpy(tpy, collector[1]);
-                    // typeptr->type = tpy;
-                    // typeptr->matrix_id = tp;
-                    // matrix[tp] = 0;
-                    // env_type[tp++] = typeptr;
+
                 }
 
                 }else{
-                    //internal error occured!
+
                 }
 
         }else if(strcmp(collector[0],"printer")== 0){
 
 
-            // verify the length
+
             if(len == 3){
 
-                //if(typeexists(env_type,collector[2],tp) >=0){
+
                 if(findbytype(collector[2]) != NULL){
 
 
@@ -189,20 +154,13 @@ int main(int argc, char *argv[])
             // assumed to be working
             if(len >=4){
 
-                if( linkme(collector[1], collector[2]) == 0){
+                conv *conversion = malloc( sizeof(conv));
+                char *p = newstring( strlen(collector[3])   );
+
+                if( linkme(collector[1], collector[2], conversion) == 0){
                     //show error message
                 }
-                // int indx = typeexists(env_type, collector[1], tp);
-                // int indy = typeexists(env_type, collector[2], tp);
 
-                // if(indx>=0 && indy >= 0){
-                //     conv *edge = newprogram();
-                //     char *tmp_name = newstring(strlen(collector[3]));
-                //     strcpy(tmp_name, collector[3]);
-                //     edge->name = tmp_name;
-                //     edge->args = NULL;
-                //     matrix[indx][indy] = edge;
-                // }
 
             }
 
@@ -260,12 +218,20 @@ int main(int argc, char *argv[])
                 JOB *j = newjob();
                 j->jobid = job;
                 j->status = QUEUED;
-                j->pgid = job;
+                // j->pgid = job;
                 char *fname = newstring(strlen(collector[1]));
                 strcpy(fname, collector[1]);
                 j->file_type = fname;
                 j->eligible_printers = ANY_PRINTER;
                 j->chosen_printer = printers[0];
+
+                char *today = NULL;
+                time_t now;
+                time(&now);
+                today = ctime(&now);
+
+
+
                 jobnode *node = newjobnode();
                 node->j = j;
                 insertjob(node);

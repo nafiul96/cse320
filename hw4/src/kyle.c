@@ -14,6 +14,8 @@
 #include <string.h>
 #include <fcntl.h>              /* Obtain O_* constant definitions */
 #include <unistd.h>
+#include <signal.h>
+#include <errno.h>
 
 
 
@@ -123,8 +125,8 @@ int converter(int pathlength){
     int pipes2[2];
 
     //set group id
-    // if(setgpid(0,0) == -1)
-    //     exit(1);
+    if(setpgid(0,0) == -1)
+        exit(1);
 
 
     pid_t id;

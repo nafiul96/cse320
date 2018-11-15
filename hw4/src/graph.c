@@ -56,7 +56,7 @@ gnode *findbytype(char *tp){
 
 
 
-int addgedge(gnode *from, gnode *to){
+adjNode *addgedge(gnode *from, gnode *to){
 
     // get head of the adjlist of to node
     adjNode *temp = from->list->head;
@@ -68,25 +68,26 @@ int addgedge(gnode *from, gnode *to){
         adjNode *edge = malloc( sizeof(adjNode));
 
         if(edge == NULL)
-            return 0;
+            return NULL;
 
-        edge->n = from->n;
+        edge->n = to->n;
         char *pr = malloc(25);
         if(pr == NULL)
-            return 0;
+            return NULL;
 
         strcpy(pr, "bin/cat");
         conv *con = malloc( sizeof(conv));
         if(con == NULL)
-            return 0;
+            return NULL;
 
         con->prog = pr;
         con->args = NULL;
         edge->conversion = con;
         edge->next = NULL;
-        temp = edge;
+        //temp = edge;
+        from->list->head = edge;
         from->degree = from->degree +1;
-        return 1;
+        return edge;
     }
 
 
@@ -94,17 +95,17 @@ int addgedge(gnode *from, gnode *to){
         adjNode *edge = malloc( sizeof(adjNode));
 
         if(edge == NULL)
-            return 0;
+            return NULL;
 
-        edge->n = from->n;
+        edge->n = to->n;
         char *pr = malloc(25);
         if(pr == NULL)
-            return 0;
+            return NULL;
 
         strcpy(pr, "bin/cat");
         conv *con = malloc( sizeof(conv));
         if(con == NULL)
-            return 0;
+            return NULL;
 
         con->prog = pr;
         con->args = NULL;
@@ -112,7 +113,7 @@ int addgedge(gnode *from, gnode *to){
         edge->next = temp;
         from->list->head = edge;
         from->degree = from->degree +1;
-        return 1;
+        return edge;
 
 
 }
@@ -144,7 +145,7 @@ void populatenode(gnode *gn, char *t){
 
 }
 
-int linkme(char *from, char *to){
+int linkme(char *from, char *to, conv *conversion){
 
 
     gnode *f = NULL;
@@ -154,12 +155,170 @@ int linkme(char *from, char *to){
         return 0;
     }
 
-    if( (f=findbytype(from)) == NULL   ){
+    if( (t=findbytype(to)) == NULL   ){
         return 0;
     }
 
-    return addgedge(f, t);
+    adjNode *tmp = addgedge(f, t);
+    if(tmp == NULL)
+        return 0;
+    tmp->conversion = conversion;
+    //return (addgedge(f, t) != NULL);
+    return 1;
 
+
+}
+
+
+
+int iseeyou(pathnode *head, adjNode *node){
+
+    pathnode *temp;
+    for(temp = head; temp != NULL; temp = temp->next){
+
+        if(   strcmp(temp->n->type,node->n->type) == 0){
+            return 1;
+        }
+
+
+    }
+
+    return 0;
+}
+
+
+
+pathnode *findpath(graph *g, char *start, char *end){
+
+
+    // get the graph nodes
+    gnode *s = findbytype(start);
+    gnode *e = findbytype(end);
+
+
+    //this is the queue
+    pathQ *q = (pathQ *)malloc( sizeof(pathQ) );
+    q->count = 0;
+    q->front = NULL;
+    q->rear = NULL;
+
+    // create pathnode with the starting node
+    pathnode *temp = malloc( sizeof(pathnode) );
+    temp->n = s->n;
+    temp->next = NULL;
+    temp->prev = NULL;
+
+
+    //actual path to be returned
+    pathnode *head = NULL;
+    pathnode *tail = NULL;
+
+    // insert into the queue
+    q->front = temp;
+    q->rear = temp;
+    q->count = q->count + 1;
+
+
+    while(q->count >0){
+
+
+        gnode *inter = findbytype(q->front->n->type);
+        adjNode *craps = NULL;
+
+        for(craps = inter->list->head; craps != NULL; craps = craps->next){
+
+            if( iseeyou(q->front,craps) || iseeyou(head,craps) ){
+                continue;
+
+            }else{
+
+
+                // create pathnode with the crap node
+                pathnode *crap = malloc( sizeof(pathnode) );
+                crap->n = craps->n;
+                crap->next = NULL;
+                crap->prev = NULL;
+
+                //enqueue crap
+                crap->prev = q->rear;
+                q->rear->next = crap;
+                q->rear = crap;
+                q->count = q->count + 1;
+
+
+            }
+
+
+        }
+
+        //it's time to add to the path by dequeuing
+        if(head == NULL){
+
+            // add to the path
+            head = q->front;
+            tail = head;
+
+            q->front = q->front->next;
+
+            head->prev = NULL;
+            tail->next = NULL;
+
+            q->count = q->count -1;
+
+
+        }else{
+
+            //add to the tail of the path by dequeuing
+            pathnode *dq = q->front;
+            q->front = q->front->next;
+
+
+            dq->prev = tail;
+            tail->next = dq;
+            tail = dq;
+            tail->next = NULL;
+            q->count = q->count -1;
+
+
+
+        }
+        if( strcmp(tail->n->type,e->n->type) == 0){
+
+
+            pathnode *tmp = tail;
+
+            if(tmp == head){
+                return head;
+            }else if(tmp->prev == head){
+                return head;
+            }
+            tmp = tmp->prev;
+
+            while(tmp != head){
+
+                gnode *n = findbytype(tmp->n->type);
+                if( findadjbytype(n->list->head, tmp->next->n->type) == NULL ){
+
+                    tmp = tmp->prev;
+                    tmp->next->next->prev = tmp;
+                    tmp->next = tmp->next->next;
+
+                }else{
+                    tmp = tmp->prev;
+                }
+            }
+
+
+            return head;
+        }
+
+
+
+
+    }
+
+
+    return NULL;
 
 }
 
@@ -169,7 +328,33 @@ int linkme(char *from, char *to){
 
 
 
+void printpath(pathnode *p){
+    if( p == NULL )
+        return;
 
+    pathnode *temp;
+    for(temp = p; temp != NULL; temp = temp->next){
+        printf("%s->", temp->n->type);
+    }
+    printf("\n");
+}
+
+
+
+adjNode *findadjbytype(adjNode *node ,char *type){
+
+    adjNode *temp;
+    for(temp = node; temp != NULL; temp = temp->next){
+
+        if( strcmp(temp->n->type, type) == 0){
+            return temp;
+        }
+
+    }
+
+    return NULL;
+
+}
 
 
 
