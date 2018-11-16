@@ -16,8 +16,12 @@
 #include <unistd.h>
 #include <signal.h>
 #include <errno.h>
+#include <unistd.h>
+#include "graph.h"
 
 
+
+extern char **environ;
 
 
 
@@ -117,40 +121,62 @@ takes the array of recognizable types and its size, and user provided  type
 // }
 
 
-int converter(int pathlength){
+int converter(pathnode *path, JOB *j){
 
-
+    pathnode * ptr;
     // create pipes
     int pipes[2];
     int pipes2[2];
 
     //set group id
-    if(setpgid(0,0) == -1)
+    if(setpgid(0,0) == -1){
         exit(1);
+    }
 
 
     pid_t id;
     //setup the pipe
-    if(pipe(pipes) == -1 || pipe(pipes2) ==-1)
+    if(pipe(pipes) == -1 || pipe(pipes2) ==-1){
         exit(1);
+    }
 
-    for (int i=0; i<=pathlength; i++){
 
-        if( (id = fork()) <0 )
+    //open the file
+    FILE *fd = fopen("a.txt","r+");
+    pipes[0] = fileno(fd);
+
+    for(ptr = path; ptr->next != NULL; ptr = ptr->next){
+
+        if( (id = fork()) <0 ){
             exit(1);//fuck off
+        }
 
-        if( id == 0  ){    // read from parent stdin
+        if( id == 0  ){   // read from parent stdin
 
             // welcome aboard - read from pipe0(in-3) write to pipe2(out-6)
-            dup2(pipes[0], 0);
-            dup2(pipes2[1], 1);
+            if(dup2(pipes[0], 0) == -1){
+                abort();
+            }
+
+
+            if(dup2(pipes2[1], 1) == -1){
+                abort();
+            }
 
             //close them all since we only need
-            close(pipes[0]);
-            close(pipes[1]);
-            close(pipes2[0]);
-            close(pipes2[1]);
+            if( close(pipes[0]) == -1 ||
+                close(pipes[1]) == -1  ||
+                close(pipes2[0]) == -1 ||
+                close(pipes2[1]) == -1
+            ){
+                abort();
+
+                }
             //execute the program
+            //get adjnode
+            gnode *gn = findbytype(ptr->n->type);
+            adjNode *node = findadjbytype(gn->list->head, ptr->next->n->type);
+            execve(node->conversion->prog,node->conversion->args,environ);
 
 
             //swap two pipes pipe1[5,6] <====> pipe2[3,4]
@@ -161,14 +187,11 @@ int converter(int pathlength){
             pipes[0] = r2;
             pipes[1] = w2;
 
-            //exit success
-
-
-
         }
 
 
     }
+
 
 
     close(pipes[0]);
@@ -176,10 +199,6 @@ int converter(int pathlength){
     close(pipes2[0]);
     close(pipes2[1]);
     dup2(pipes[0], 0);
-    //dup2(pipes2[1], connect_to_printer(NULL,0x0));
-
-
-    //for(i=0; i <)
 
 
 

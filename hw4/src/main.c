@@ -12,8 +12,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/time.h>
-#include "graph.h"
-#include "<time.h>"
+#include "jobq.h"
+
+//#include "<time.h>"
 
 
 
@@ -39,7 +40,7 @@ int main(int argc, char *argv[])
 
     g = creategraph();
 
-    createQ();
+    jobq *q = createQ();
 
 
    // char *inputfile;
@@ -106,6 +107,10 @@ int main(int argc, char *argv[])
                 // if(typeexists(env_type, collector[1], tp) > 0 ){
                 if(findbytype(collector[1]) != NULL ){
                     // show error message
+                    char *tmp = newstring(255);
+                    imp_format_error_message("type exists!", tmp, 255);
+                    printf("%s\n",tmp);
+                    free(tmp);
 
                 }else{
 
@@ -151,14 +156,56 @@ int main(int argc, char *argv[])
 
         }else if(strcmp(collector[0],"conversion")== 0){
 
-            // assumed to be working
+            // assumed to be working - still not taking acocunt the program part
             if(len >=4){
 
-                conv *conversion = malloc( sizeof(conv));
-                char *p = newstring( strlen(collector[3])   );
+
+                gnode *f = findbytype(collector[1]);
+                gnode *t = findbytype(collector[2]);
+
+                if( f == NULL){
+                    char *tmp = newstring(255);
+                    imp_format_error_message("type does not exist!\n", tmp, 255);
+                    printf("%s\n",tmp);
+                    free(tmp);
+
+                    continue;
+
+                }
+
+                if( t == NULL){
+                    char *tmp = newstring(255);
+                    imp_format_error_message("type does not exist!\n", tmp, 255);
+                    printf("%s\n",tmp);
+                    free(tmp);
+                    continue;
+
+                }
+
+                if( findadjbytype(f->list->head,t->n->type) != NULL){
+
+                    char *tmp = newstring(255);
+                    imp_format_error_message("edge exists \n", tmp, 255);
+                    printf("%s\n",tmp);
+                    free(tmp);
+                    continue;
+                }
+
+
+                    conv *conversion = malloc( sizeof(conv));
+                    char *prg = malloc(sizeof(255));
+                    strcpy(prg, collector[3]);
+                    conversion->args = NULL;
+
 
                 if( linkme(collector[1], collector[2], conversion) == 0){
                     //show error message
+                    char *tmp = newstring(255);
+                    imp_format_error_message("conversion not possible!", tmp, 255);
+                    printf("%s\n",tmp);
+                    free(tmp);
+                    continue;
+
                 }
 
 
@@ -179,62 +226,84 @@ int main(int argc, char *argv[])
 
             if(len== 1){
 
-                printjobs();
+                printQ(q);
 
             }
 
 
 
         }else if(strcmp(collector[0],"print") == 0){
+
+
+
+
+
             if(len > 1){
                 printf("recognized:%s \n",buffer);
 
-                //check conditions
-            //     pid_t rootProc = fork();
-            //     if (converter(NULL) != 0){
-            //         printf("abort process%d\n", rootProc);
-            //     }
 
-            // }
-
-                //testing the queue
-
-//                 typedef struct job {
-//     int jobid;                      /* Job ID of job. */
-//     JOB_STATUS status;              /* Status of job. */
-//     int pgid;                       /* Process group ID of conversion pipeline. */
-//     char *file_name;                /* Pathname of file to be printed. */
-//     char *file_type;                /* Type name of file to be printed. */
-//     PRINTER_SET eligible_printers;  /* Set of eligible printers for the job. */
-//     PRINTER *chosen_printer;        /* Printer chosen for this job. */
-//     struct timeval creation_time;   /* Time job was queued. */
-//     struct timeval change_time;     /* Time of last status change. */
-//     void *other_info;               /* You may store other info in this field. */
-// } JOB;
+                char *pf = newstring(strlen(collector[1]));
+                strcpy(pf,collector[1]);
+                char **f_array = malloc(1024);
+                int fl = 0;
+                ctot(pf, f_array,&fl, ".");
+                char *ext = newstring( strlen(f_array[1]) );
+                strcpy(ext,f_array[1]);
+                if(fl<2){
+                    char *tmp = newstring(255);
+                    imp_format_error_message("not a valid filename\n", tmp, 255);
+                    printf("%s\n",tmp);
+                    free(tmp);
 
 
+                }
+                else if( findbytype(ext) == NULL){
+                    char *tmp = newstring(255);
+                    imp_format_error_message("cannot print this type!\n", tmp, 255);
+                    printf("%s\n",tmp);
+                    free(tmp);
 
+                }else{
 
                 JOB *j = newjob();
                 j->jobid = job;
                 j->status = QUEUED;
-                // j->pgid = job;
+                 j->pgid = job;
                 char *fname = newstring(strlen(collector[1]));
                 strcpy(fname, collector[1]);
                 j->file_type = fname;
                 j->eligible_printers = ANY_PRINTER;
                 j->chosen_printer = printers[0];
-
-                char *today = NULL;
-                time_t now;
-                time(&now);
-                today = ctime(&now);
-
-
-
-                jobnode *node = newjobnode();
+                jobnode *node = malloc( sizeof(jobnode));
                 node->j = j;
-                insertjob(node);
+
+
+                if(len >2){
+
+                    //typedef uint32_t PRINTER_SET;
+                    PRINTER_SET *myset = malloc( sizeof(uint32_t));
+                    *myset = 0x0;
+
+                    for(int i= 2; i< len; i++){
+
+                        for(int j=0; j<printer; j++){
+
+                            if(  strcmp(printers[j]->name,collector[i]) ==0   && findpath(g,ext,printers[j]->type) != NULL ){
+                                //printer_set  |= (1<<printer);
+                                *myset |= (1<<printers[j]->id);
+                            }
+
+                        }
+                    }
+
+                    j->eligible_printers = *myset;
+
+                }
+                enqueue(q,node);
+                printf("job has been qeuued successfully\n");
+
+
+            }
 
 
             }
@@ -246,6 +315,7 @@ int main(int argc, char *argv[])
         }else if(strcmp(collector[0],"cancel") == 0){
             if(len ==2){
                 printf("recognized:%s \n",buffer);
+                //find the job by
             }
 
 
@@ -287,8 +357,56 @@ int main(int argc, char *argv[])
         free(buffer);
         free(collector);
 
+        if(q->count >0){
+        jobnode *jpt;
+        for(jpt = q->front; jpt != NULL; jpt = jpt->next){
+
+            // check for completeted to be removed!
+            if(jpt->j->status == COMPLETED){
+
+                //check the time status
+                //
+                continue;
+
+            }
+            //queued
+            if(jpt->j->status == QUEUED){
+
+                for(int i=0; i<printer; i++){
+
+                    if( printers[i]->enabled &&
+                        //!printers[i]->busy  &&
+                        (printers[i]->id & jpt->j->eligible_printers) > 0 &&
+                        findpath(g,   jpt->j->file_type,   printers[i]->type) != NULL){
+
+                        jpt->j->chosen_printer = printers[i];
+
+                       break;
+                    }
+                }
+
+            }
+        }
+
+
+        if(jpt != NULL){
+
+
+            pid_t root = fork();
+            if( root < 0  ){
+                abort();
+            }
+
+            if(root == 0 ){
+                pathnode *p = findpath(g, jpt->j->file_type, jpt->j->chosen_printer->type);
+                converter( p,  jpt->j);
+            }
+        }
+
     }
 
+
+    }
 
 
 
@@ -296,57 +414,4 @@ int main(int argc, char *argv[])
 }
 
 
-
-// void printCommand(){
-
-//     printf("Miscellaneous Commands\n");
-//     printf("help \n quit\n");
-//     printf("Configuration Commands \n");
-//     printf("type file_name \n printer printer_name file_type \n");
-//     printf("conversion file_type1 file_type2 coversion_program[arg1 arg2 ...] \n");
-//     printf("Informational Commands \n printers \n jobs \n");
-//     printf("Spooling Commands\n");
-//     printf("print file_name [printer1 printer2 ...]\n");
-//     printf("cancel job_number \n");
-//     printf("pause job_number \n");
-//     printf("resume job_number \n");
-//     printf("disable printer_name \n");
-//     printf("enable printer_name\n");
-
-
-// }
-
-
-
-
-// void ctot(char bfr[], char **collector, int * tokensz){
-
-//     int i = 0;
-//     char *p = strtok (bfr, " ");
-
-//     // need to limit the number of elemnent the buffer can handle
-
-//     while(p != NULL){
-
-//         collector[i++] = p;
-//         p = strtok(NULL, " ");
-//     }
-
-//     *tokensz = i;
-// }
-
-
-// void all_printers(PRINTER *ptr[], int num){
-
-//     for(int i=0; i<num; i++){
-//         PRINTER *samsung = ptr[i];
-//         char *buff = malloc(1024);
-//         buff = imp_format_printer_status(samsung, buff, 1024);
-//         printf("%s\n", buff);
-//         free(buff);
-
-//     }
-
-
-// }
 

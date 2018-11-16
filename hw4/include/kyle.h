@@ -12,6 +12,7 @@
 #include<sys/types.h>
 #include<string.h>
 #include<sys/wait.h>
+#include "graph.h"
 
 
 FILE *ifile;
@@ -41,7 +42,7 @@ FILE *ifile;
 void printCommand();
 void ctot(char bfr[], char **collector, int * tokensz, char *del);
 void all_printers(PRINTER *ptr[], int num);
-int converter(int pathlength);
+int converter(pathnode *path, JOB *j);
 
 
 

@@ -93,19 +93,19 @@ JOB * newjob(){
 }
 
 
-jobnode *newjobnode(){
+// jobnode *newjobnode(){
 
-    jobnode *p;
-    if((p = (jobnode *)malloc(sizeof(jobnode))) == NULL){
+//     jobnode *p;
+//     if((p = (jobnode *)malloc(sizeof(jobnode))) == NULL){
 
-        char *buff = malloc(1024);
-        buff = imp_format_error_message(memerr, buff, 1024);
-        fprintf(stderr, "%s\n",buff);
-        free(buff);
+//         char *buff = malloc(1024);
+//         buff = imp_format_error_message(memerr, buff, 1024);
+//         fprintf(stderr, "%s\n",buff);
+//         free(buff);
 
-    }
-    return p;
+//     }
+//     return p;
 
 
 
-}
+// }
