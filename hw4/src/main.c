@@ -559,7 +559,7 @@ void forkmaster(pathnode *path, jobnode *j){
             gnode * s  = findbytype(ptr->n->type);
             adjNode *r = findadjbytype(s->list->head,ptr->next->n->type);
 
-            //char *cmd[] = { "/bin/cat", "rsrc/b.pdf", (char *)0 };
+            //chahfchar *cmd[] = { "/bin/cat", "rsrc/b.pdf", (char *)0 };
             execve (r->conversion->prog, r->conversion->args, NULL);
             int r2 = pipes[0];
             int w2 = pipes[1];
