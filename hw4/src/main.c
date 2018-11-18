@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
                 //buffer  = buff;
                 if( ( fgets(buff, 1024,ifile)) ==NULL){
                     fclose(ifile);
-                    inp = 0;
+                    break;
                 }else{
 
 
@@ -112,6 +112,7 @@ int main(int argc, char *argv[])
                 strcpy(buffer,token);
                 collector = malloc(4048);
                 ctot(buffer, collector,&len, " ");
+                fprintf(stdout, "imp>%s\n", token);
                 }
 
             }else{
