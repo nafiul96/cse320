@@ -25,7 +25,6 @@ extern char **environ;
 
 
 
-
 void printCommand(){
 
     printf("Miscellaneous Commands\n");

@@ -37,6 +37,7 @@ jobq *q;
 
 PRINTER  *printers[32];
 PRINTER_SET printer_set;
+//FILE *ofile;
 
 int main(int argc, char *argv[])
 {
@@ -112,7 +113,7 @@ int main(int argc, char *argv[])
                 strcpy(buffer,token);
                 collector = malloc(4048);
                 ctot(buffer, collector,&len, " ");
-                fprintf(stdout, "imp>%s\n", token);
+                //fprintf(stdout, "imp>%s\n", token);
                 }
 
             }else{
