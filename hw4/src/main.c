@@ -35,9 +35,12 @@ int inp =0, out = 0, quit = 0, tp, printer, job;
 
 jobq *q;
 
+sigset_t mask;
+
+
 PRINTER  *printers[32];
 PRINTER_SET printer_set;
-//FILE *ofile;
+FILE *ofile;
 
 int main(int argc, char *argv[])
 {
@@ -52,6 +55,7 @@ int main(int argc, char *argv[])
 
 
     char *inputfile;
+    char * outfile;
     char optval;
     while(optind < argc) {
 	if((optval = getopt(argc, argv, "i:o:")) != -1) {
@@ -69,7 +73,13 @@ int main(int argc, char *argv[])
         break;
         case 'o':
         // get the file name
-        out++;
+        outfile = optarg;
+        ofile = fopen(outfile,"w");
+        if(ifile == NULL){
+            fprintf(stderr, "error\n");
+        }else{
+            out++;
+        }
         break;
 	    case '?':
 		fprintf(stderr, "Usage: %s [-i <cmd_file>] [-o <out_file>]\n", argv[0]);
@@ -94,15 +104,20 @@ int main(int argc, char *argv[])
             char *buffer;
             char **collector;
 
+
+            if(out){
+                stdout = ofile;
+            }
             if(inp){
 
                 buffer = malloc(1024);
 
                 char buff[1024];
                 //buffer  = buff;
-                if( ( fgets(buff, 1024,ifile)) ==NULL){
-                    fclose(ifile);
+                if( ( fgets(buff, 4048,ifile)) ==NULL){
+                    //fclose(ifile);
                     break;
+                  // inp = 0;
                 }else{
 
 
@@ -113,8 +128,11 @@ int main(int argc, char *argv[])
                 strcpy(buffer,token);
                 collector = malloc(4048);
                 ctot(buffer, collector,&len, " ");
-                //fprintf(stdout, "imp>%s\n", token);
+                fprintf(stdout, "%s\n", token);
                 }
+
+
+
 
             }else{
 
@@ -143,9 +161,8 @@ int main(int argc, char *argv[])
 
             if(len == 2){
 
-                // if(typeexists(env_type, collector[1], tp) > 0 ){
                 if(findbytype(collector[1]) != NULL ){
-                    // show error message
+
                     char *tmp = newstring(255);
                     imp_format_error_message("type exists!", tmp, 255);
                     printf("%s\n",tmp);
@@ -208,20 +225,20 @@ int main(int argc, char *argv[])
                     printf("%s\n",tmp);
                     free(tmp);
 
-                    continue;
+                    //continue;
 
                 }
 
-                if( t == NULL){
+                else if( t == NULL){
                     char *tmp = newstring(255);
                     imp_format_error_message("type does not exist!\n", tmp, 255);
                     printf("%s\n",tmp);
                     free(tmp);
-                    continue;
+                    //continue;
 
                 }
 
-                if( findadjbytype(f->list->head,t->n->type) != NULL){
+               else  if( findadjbytype(f->list->head,t->n->type) != NULL){
 
                     char *tmp = newstring(255);
                     imp_format_error_message("edge exists \n", tmp, 255);
@@ -232,8 +249,7 @@ int main(int argc, char *argv[])
 
 
                     conv *conversion = malloc( sizeof(conv));
-                    char *prg = malloc(sizeof(255));
-                    strcpy(prg, collector[3]);
+                    conversion->prog = collector[3];
                     conversion->args = &collector[3];
 
                 if( linkme(collector[1], collector[2], conversion) == 0){
@@ -242,7 +258,7 @@ int main(int argc, char *argv[])
                     imp_format_error_message("conversion not possible!", tmp, 255);
                     printf("%s\n",tmp);
                     free(tmp);
-                    continue;
+                   // continue;
 
                 }
 
@@ -281,7 +297,6 @@ int main(int argc, char *argv[])
 
 
             if(len > 1){
-               // printf("recognized:%s \n",buffer);
 
 
                 char *pf = newstring(strlen(collector[1]));
@@ -362,8 +377,11 @@ int main(int argc, char *argv[])
 
         }else if(strcmp(collector[0],"cancel") == 0){
             if(len ==2){
-                printf("recognized:%s \n",buffer);
-                //find the job by
+                int x =0;
+                sscanf(collector[1], "%d", &x);
+                kill(x, SIGSTOP);
+
+
             }
 
             free(buffer);
@@ -373,7 +391,9 @@ int main(int argc, char *argv[])
         }else if(strcmp(collector[0],"pause") == 0){
 
             if(len == 2){
-                printf("recognized:%s \n",buffer);
+                int x =0;
+                sscanf(collector[1], "%d", &x);
+                //pause(x, SIGKILL);
             }
 
             free(buffer);
@@ -383,7 +403,8 @@ int main(int argc, char *argv[])
         }else if(strcmp(collector[0],"resume") == 0){
 
             if(len == 2){
-                printf("recognized:%s \n",buffer);
+                struct sigaction  sa;
+                sigaction(SIGHUP, &sa, NULL);
             }
 
             free(buffer);
@@ -462,12 +483,13 @@ int main(int argc, char *argv[])
                                 //error
                             }
                             if(pid == 0){
-
                                 forkmaster(p, jpt);
-                                sleep(1);
+                                //wait(&status);
                                 exit(0);
 
                             }
+
+                            //sigprocmask(SIG_UNBLOCK, &mask, NULL);
 
 
                         }
@@ -493,6 +515,10 @@ int main(int argc, char *argv[])
 void forkmaster(pathnode *path, jobnode *j){
 
     int stat;
+   // sigset_t mask2;
+
+
+
     signal(SIGCHLD,handler);
     pathnode *ptr;
     if( setpgid(0,0) == -1 ){
@@ -508,58 +534,54 @@ void forkmaster(pathnode *path, jobnode *j){
 
     pid_t cpid;
 
+    sigprocmask(SIG_BLOCK, &mask, NULL);
 
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGCHLD);
+    sigprocmask(SIG_BLOCK, &mask, NULL);
 
-    for(ptr = path; ptr != NULL; ptr = ptr->next){
+    for(ptr = path; ptr->next != NULL; ptr = ptr->next){
         cpid = fork();
         if(cpid <0){
 
         }
 
         if(cpid ==0){
-
-
-            if( ptr->next == NULL){
-
-                dup2(pipes[0],0);
-                int prt  = imp_connect_to_printer(j->j->chosen_printer, PRINTER_NORMAL);
-                dup2(prt,1);
-                close(pipes[0]);
-                close(pipes[1]);
-                close(pipes2[0]);
-                close(pipes2[1]);
-                wait(&stat);
-                exit(0);
-
-            }else{
+            sigprocmask(SIG_UNBLOCK, &mask, NULL);
             dup2(pipes[0], 0);
             dup2(pipes2[1],1);
             close(pipes[0]);
             close(pipes[1]);
             close(pipes2[0]);
             close(pipes2[1]);
-            char *cmd[] = { "/bin/cat", "./rsrc/a.txt", (char *)0 };
-            execve (cmd[0], cmd, NULL);
-            int r2 = pipes2[0];
-            int w2 = pipes2[1];
-            pipes2[0] = pipes[0];
-            pipes2[1] = pipes[1];
-            pipes[0] = r2;
-            pipes[1] = w2;
+
+           // adjNode *findadjbytype(adjNode *node ,char *type);
+            gnode * s  = findbytype(ptr->n->type);
+            adjNode *r = findadjbytype(s->list->head,ptr->next->n->type);
+
+            //char *cmd[] = { "/bin/cat", "rsrc/b.pdf", (char *)0 };
+            execve (r->conversion->prog, r->conversion->args, NULL);
+            int r2 = pipes[0];
+            int w2 = pipes[1];
+            pipes[0] = pipes2[0];
+            pipes[1] = pipes2[1];
+            pipes2[0] = r2;
+            pipes2[1] = w2;
             wait(&stat);
             exit(0);
-        }
 
 
         }
     }
 
-
+    int d = imp_connect_to_printer(j->j->chosen_printer, PRINTER_NORMAL);
+    dup2(pipes[0], 0);
+    dup2(d,1);
     close(pipes[0]);
     close(pipes[1]);
     close(pipes2[0]);
     close(pipes2[1]);
-
+    sigprocmask(SIG_UNBLOCK, &mask, NULL);
 
 
 
