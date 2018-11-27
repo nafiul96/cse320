@@ -81,22 +81,21 @@ while((opt=getopt(argc, argv, "p:"))  != -1){
     /**
      * The code for sighup
      */
-    struct sigaction sa;
 
-    sa.sa_handler = &handle_hup;
-    //sigfillset(&sa.sa_mask);
-    if( sigaction(SIGHUP, &sa, NULL) == -1){
-        perror("Error: SIGHUP handler setup error.");
-    }
+    Signal(SIGHUP, handle_hup);
 
-    int listenfd, connfd;
-    socklen_t clientlen = sizeof(struct sockaddr_in);
+    int listenfd, *connfd;
+
     struct sockaddr_in clientaddr;
     pthread_t tid;
     listenfd = Open_listenfd(port);
+    socklen_t clientlen = sizeof(struct sockaddr_in);
+
     while(1){
-        connfd = Accept(listenfd, (SA *) &clientaddr, &clientlen);
-        pthread_create(&tid,NULL,xacto_client_service, &connfd);
+
+        connfd=Malloc(sizeof(int));
+        *connfd = Accept(listenfd, (SA *) &clientaddr, &clientlen);
+        pthread_create(&tid,NULL,xacto_client_service, connfd);
     }
 
 
@@ -135,9 +134,9 @@ void terminate(int status) {
 void handle_hup(int status){
 
     while((waitpid(-1,&status,0)>0));
-    //kill(SIGTERM,status);
-    //pthread_join(status, NULL);
-    pthread_kill(status, SIGTERM);
-    //exit(EXIT_SUCCESS);
+
+
+    terminate(EXIT_SUCCESS);
+
 
 }

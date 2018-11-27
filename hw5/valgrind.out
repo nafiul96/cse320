@@ -1,94 +1,51 @@
-==14817== Memcheck, a memory error detector
-==14817== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
-==14817== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
-==14817== Command: bin/xacto -p 9999
-==14817== Parent PID: 14807
-==14817== 
-==14817== Syscall param rt_sigaction(act->sa_mask) points to uninitialised byte(s)
-==14817==    at 0x4E4B48E: __libc_sigaction (sigaction.c:62)
-==14817==    by 0x40205A: main (main.c:88)
-==14817==  Address 0xffefffc68 is on thread 1's stack
-==14817== 
-==14817== Syscall param rt_sigaction(act->sa_flags) points to uninitialised byte(s)
-==14817==    at 0x4E4B48E: __libc_sigaction (sigaction.c:62)
-==14817==    by 0x40205A: main (main.c:88)
-==14817==  Address 0xffefffc58 is on thread 1's stack
-==14817== 
-==14817== Thread 2:
-==14817== Invalid free() / delete / delete[] / realloc()
-==14817==    at 0x4C2EDEB: free (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
-==14817==    by 0x403A6D: xacto_client_service (server.c:39)
-==14817==    by 0x4E416B9: start_thread (pthread_create.c:333)
-==14817==  Address 0xffefffdb4 is on thread 1's stack
-==14817==  in frame #2, created by main (main.c:28)
-==14817== 
-==14817== Thread 1:
-==14817== Invalid read of size 4
-==14817==    at 0x4E48570: pthread_kill (pthread_kill.c:39)
-==14817==    by 0x4021CE: handle_hup (main.c:140)
-==14817==    by 0x4E4B38F: ??? (in /lib/x86_64-linux-gnu/libpthread-2.23.so)
-==14817==    by 0x4E4A76C: ??? (syscall-template.S:84)
-==14817==    by 0x402C6A: Accept (csapp.c:415)
-==14817==    by 0x4020A4: main (main.c:98)
-==14817==  Address 0x2d1 is not stack'd, malloc'd or (recently) free'd
-==14817== 
-==14817== 
-==14817== Process terminating with default action of signal 11 (SIGSEGV)
-==14817==  Access not within mapped region at address 0x2D1
-==14817==    at 0x4E48570: pthread_kill (pthread_kill.c:39)
-==14817==    by 0x4021CE: handle_hup (main.c:140)
-==14817==    by 0x4E4B38F: ??? (in /lib/x86_64-linux-gnu/libpthread-2.23.so)
-==14817==    by 0x4E4A76C: ??? (syscall-template.S:84)
-==14817==    by 0x402C6A: Accept (csapp.c:415)
-==14817==    by 0x4020A4: main (main.c:98)
-==14817==  If you believe this happened as a result of a stack
-==14817==  overflow in your program's main thread (unlikely but
-==14817==  possible), you can try to increase the size of the
-==14817==  main thread stack using the --main-stacksize= flag.
-==14817==  The main thread stack size used in this run was 8388608.
-==14817== 
-==14817== FILE DESCRIPTORS: 8 open at exit.
-==14817== Open AF_INET socket 5: 0.0.0.0:9999 <-> unbound
-==14817==    at 0x515F5A7: socket (syscall-template.S:84)
-==14817==    by 0x4034D5: open_listenfd (csapp.c:765)
-==14817==    by 0x4035FC: Open_listenfd (csapp.c:809)
-==14817==    by 0x402080: main (main.c:96)
-==14817== 
-==14817== Open file descriptor 13: /dev/shm/bxf_arena_14805 (deleted)
-==14817==    <inherited from parent>
-==14817== 
-==14817== Open file descriptor 11: /dev/shm/bxf_arena_14805 (deleted)
-==14817==    <inherited from parent>
-==14817== 
-==14817== Open file descriptor 4:
-==14817==    <inherited from parent>
-==14817== 
-==14817== Open file descriptor 3: /home/student/mazim/hw5/valgrind.out
-==14817==    <inherited from parent>
-==14817== 
-==14817== Open file descriptor 2: /dev/pts/0
-==14817==    <inherited from parent>
-==14817== 
-==14817== Open file descriptor 1: /dev/pts/0
-==14817==    <inherited from parent>
-==14817== 
-==14817== Open file descriptor 0:
-==14817==    <inherited from parent>
-==14817== 
-==14817== 
-==14817== HEAP SUMMARY:
-==14817==     in use at exit: 408 bytes in 2 blocks
-==14817==   total heap usage: 4 allocs, 3 frees, 800 bytes allocated
-==14817== 
-==14817== LEAK SUMMARY:
-==14817==    definitely lost: 0 bytes in 0 blocks
-==14817==    indirectly lost: 0 bytes in 0 blocks
-==14817==      possibly lost: 0 bytes in 0 blocks
-==14817==    still reachable: 408 bytes in 2 blocks
-==14817==         suppressed: 0 bytes in 0 blocks
-==14817== Reachable blocks (those to which a pointer was found) are not shown.
-==14817== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==14817== 
-==14817== For counts of detected and suppressed errors, rerun with: -v
-==14817== Use --track-origins=yes to see where uninitialised values come from
-==14817== ERROR SUMMARY: 4 errors from 4 contexts (suppressed: 0 from 0)
+==8094== Memcheck, a memory error detector
+==8094== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
+==8094== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
+==8094== Command: bin/xacto -p 9999
+==8094== Parent PID: 8082
+==8094== 
+==8094== 
+==8094== FILE DESCRIPTORS: 8 open at exit.
+==8094== Open AF_INET socket 5: 0.0.0.0:9999 <-> unbound
+==8094==    at 0x515F5A7: socket (syscall-template.S:84)
+==8094==    by 0x40342C: open_listenfd (csapp.c:765)
+==8094==    by 0x403553: Open_listenfd (csapp.c:809)
+==8094==    by 0x401FDA: main (main.c:91)
+==8094== 
+==8094== Open file descriptor 12: /dev/shm/bxf_arena_8080 (deleted)
+==8094==    <inherited from parent>
+==8094== 
+==8094== Open file descriptor 11: /dev/shm/bxf_arena_8080 (deleted)
+==8094==    <inherited from parent>
+==8094== 
+==8094== Open file descriptor 4:
+==8094==    <inherited from parent>
+==8094== 
+==8094== Open file descriptor 3: /home/student/mazim/hw5/valgrind.out
+==8094==    <inherited from parent>
+==8094== 
+==8094== Open file descriptor 2: /dev/pts/0
+==8094==    <inherited from parent>
+==8094== 
+==8094== Open file descriptor 1: /dev/pts/0
+==8094==    <inherited from parent>
+==8094== 
+==8094== Open file descriptor 0:
+==8094==    <inherited from parent>
+==8094== 
+==8094== 
+==8094== HEAP SUMMARY:
+==8094==     in use at exit: 4 bytes in 1 blocks
+==8094==   total heap usage: 6 allocs, 5 frees, 808 bytes allocated
+==8094== 
+==8094== LEAK SUMMARY:
+==8094==    definitely lost: 0 bytes in 0 blocks
+==8094==    indirectly lost: 0 bytes in 0 blocks
+==8094==      possibly lost: 0 bytes in 0 blocks
+==8094==    still reachable: 4 bytes in 1 blocks
+==8094==         suppressed: 0 bytes in 0 blocks
+==8094== Reachable blocks (those to which a pointer was found) are not shown.
+==8094== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==8094== 
+==8094== For counts of detected and suppressed errors, rerun with: -v
+==8094== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
