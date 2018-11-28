@@ -21,7 +21,7 @@ static void terminate(int status);
 void handle_hup(int status);
 
 
-
+//int *fd;
 
 CLIENT_REGISTRY *client_registry;
 
@@ -32,7 +32,7 @@ int main(int argc, char* argv[]){
     /**
      * Code for getting the port number
      */
-    int opt, port;
+    int opt, port, *fd;
 
 
     if(argc==1){
@@ -84,7 +84,7 @@ while((opt=getopt(argc, argv, "p:"))  != -1){
 
     Signal(SIGHUP, handle_hup);
 
-    int listenfd, *connfd;
+    int listenfd, connfd;
 
     struct sockaddr_in clientaddr;
     pthread_t tid;
@@ -93,9 +93,12 @@ while((opt=getopt(argc, argv, "p:"))  != -1){
 
     while(1){
 
-        connfd=Malloc(sizeof(int));
-        *connfd = Accept(listenfd, (SA *) &clientaddr, &clientlen);
-        pthread_create(&tid,NULL,xacto_client_service, connfd);
+        //connfd=Malloc(sizeof(int));
+        connfd = Accept(listenfd, (SA *) &clientaddr, &clientlen);
+        //open(*connfd);
+        fd = malloc( sizeof(int));
+        *fd = connfd;
+        pthread_create(&tid,NULL,xacto_client_service, fd);
     }
 
 
@@ -133,7 +136,7 @@ void terminate(int status) {
 
 void handle_hup(int status){
 
-    while((waitpid(-1,&status,0)>0));
+    //while((waitpid(-1,&status,0)>0));
 
 
     terminate(EXIT_SUCCESS);

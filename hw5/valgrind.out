@@ -1,51 +1,44 @@
-==8094== Memcheck, a memory error detector
-==8094== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
-==8094== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
-==8094== Command: bin/xacto -p 9999
-==8094== Parent PID: 8082
-==8094== 
-==8094== 
-==8094== FILE DESCRIPTORS: 8 open at exit.
-==8094== Open AF_INET socket 5: 0.0.0.0:9999 <-> unbound
-==8094==    at 0x515F5A7: socket (syscall-template.S:84)
-==8094==    by 0x40342C: open_listenfd (csapp.c:765)
-==8094==    by 0x403553: Open_listenfd (csapp.c:809)
-==8094==    by 0x401FDA: main (main.c:91)
-==8094== 
-==8094== Open file descriptor 12: /dev/shm/bxf_arena_8080 (deleted)
-==8094==    <inherited from parent>
-==8094== 
-==8094== Open file descriptor 11: /dev/shm/bxf_arena_8080 (deleted)
-==8094==    <inherited from parent>
-==8094== 
-==8094== Open file descriptor 4:
-==8094==    <inherited from parent>
-==8094== 
-==8094== Open file descriptor 3: /home/student/mazim/hw5/valgrind.out
-==8094==    <inherited from parent>
-==8094== 
-==8094== Open file descriptor 2: /dev/pts/0
-==8094==    <inherited from parent>
-==8094== 
-==8094== Open file descriptor 1: /dev/pts/0
-==8094==    <inherited from parent>
-==8094== 
-==8094== Open file descriptor 0:
-==8094==    <inherited from parent>
-==8094== 
-==8094== 
-==8094== HEAP SUMMARY:
-==8094==     in use at exit: 4 bytes in 1 blocks
-==8094==   total heap usage: 6 allocs, 5 frees, 808 bytes allocated
-==8094== 
-==8094== LEAK SUMMARY:
-==8094==    definitely lost: 0 bytes in 0 blocks
-==8094==    indirectly lost: 0 bytes in 0 blocks
-==8094==      possibly lost: 0 bytes in 0 blocks
-==8094==    still reachable: 4 bytes in 1 blocks
-==8094==         suppressed: 0 bytes in 0 blocks
-==8094== Reachable blocks (those to which a pointer was found) are not shown.
-==8094== To see them, rerun with: --leak-check=full --show-leak-kinds=all
-==8094== 
-==8094== For counts of detected and suppressed errors, rerun with: -v
-==8094== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+==7402== Memcheck, a memory error detector
+==7402== Copyright (C) 2002-2015, and GNU GPL'd, by Julian Seward et al.
+==7402== Using Valgrind-3.11.0 and LibVEX; rerun with -h for copyright info
+==7402== Command: bin/xacto -p 9999
+==7402== Parent PID: 7390
+==7402== 
+==7402== 
+==7402== FILE DESCRIPTORS: 8 open at exit.
+==7402== Open AF_INET socket 5: 0.0.0.0:9999 <-> unbound
+==7402==    at 0x515F5A7: socket (syscall-template.S:84)
+==7402==    by 0x403415: open_listenfd (csapp.c:765)
+==7402==    by 0x40353C: Open_listenfd (csapp.c:809)
+==7402==    by 0x401FDA: main (main.c:91)
+==7402== 
+==7402== Open file descriptor 13: /dev/shm/bxf_arena_7388 (deleted)
+==7402==    <inherited from parent>
+==7402== 
+==7402== Open file descriptor 12: /dev/shm/bxf_arena_7388 (deleted)
+==7402==    <inherited from parent>
+==7402== 
+==7402== Open file descriptor 4:
+==7402==    <inherited from parent>
+==7402== 
+==7402== Open file descriptor 3: /home/student/mazim/hw5/valgrind.out
+==7402==    <inherited from parent>
+==7402== 
+==7402== Open file descriptor 2: /dev/pts/0
+==7402==    <inherited from parent>
+==7402== 
+==7402== Open file descriptor 1: /dev/pts/0
+==7402==    <inherited from parent>
+==7402== 
+==7402== Open file descriptor 0:
+==7402==    <inherited from parent>
+==7402== 
+==7402== 
+==7402== HEAP SUMMARY:
+==7402==     in use at exit: 0 bytes in 0 blocks
+==7402==   total heap usage: 5 allocs, 5 frees, 804 bytes allocated
+==7402== 
+==7402== All heap blocks were freed -- no leaks are possible
+==7402== 
+==7402== For counts of detected and suppressed errors, rerun with: -v
+==7402== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
