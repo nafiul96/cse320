@@ -193,6 +193,7 @@ VERSION *version_create(TRANSACTION *tp, BLOB *bp){
 
     VERSION *ver = Malloc(sizeof(VERSION));
     ver->creator = tp;
+    ver->creator->refcnt = ver->creator->refcnt+1;
     ver->blob = bp;
 
     return ver;
@@ -211,6 +212,7 @@ void version_dispose(VERSION *vp){
 
     vp->creator->refcnt = vp->creator->refcnt-1;
     vp->blob->refcnt = vp->blob->refcnt -1;
+   // vp = vp->next;
     Free(vp->creator);
 }
 
