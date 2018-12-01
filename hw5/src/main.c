@@ -32,7 +32,7 @@ int main(int argc, char* argv[]){
     /**
      * Code for getting the port number
      */
-    int opt, port, *fd;
+    int opt, port;
 
 
     if(argc==1){
@@ -84,7 +84,7 @@ while((opt=getopt(argc, argv, "p:"))  != -1){
 
     Signal(SIGHUP, handle_hup);
 
-    int listenfd, connfd;
+    int listenfd, *connfd;
 
     struct sockaddr_in clientaddr;
     pthread_t tid;
@@ -94,11 +94,13 @@ while((opt=getopt(argc, argv, "p:"))  != -1){
     while(1){
 
         //connfd=Malloc(sizeof(int));
-        connfd = Accept(listenfd, (SA *) &clientaddr, &clientlen);
+        connfd = Malloc( sizeof(int));
+        *connfd = Accept(listenfd, (SA *) &clientaddr, &clientlen);
         //open(*connfd);
-        fd = malloc( sizeof(int));
-        *fd = connfd;
-        pthread_create(&tid,NULL,xacto_client_service, fd);
+        // fd = malloc( sizeof(int));
+        // *fd = connfd;
+        //creg_register(client_registry, *connfd);
+        pthread_create(&tid,NULL,xacto_client_service, connfd);
     }
 
 
