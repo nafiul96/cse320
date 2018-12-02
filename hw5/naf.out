@@ -1,0 +1,52 @@
+[1;35mDEBUG: src/client_registry.c:creg_init:34 [0mInitialize client registry
+[1;35mDEBUG: src/transaction.c:trans_init:15 [0mInitialize transaction manager
+[1;35mDEBUG: src/store.c:store_init:16 [0mInitialize object store
+[1;35mDEBUG: src/server.c:xacto_client_service:40 [0m[4] Starting client service
+[1;35mDEBUG: src/client_registry.c:creg_register:59 [0mRegister client 4 (total connected: 1)
+[1;35mDEBUG: src/transaction.c:trans_create:42 [0mCreate new transaction 0
+[1;35mDEBUG: src/transaction.c:trans_ref:70 [0mIncrease ref count on transaction 0 (0 -> 1) for newly created transaction
+[1;35mDEBUG: src/server.c:xacto_client_service:61 [0m[4] PUT packet received
+[1;35mDEBUG: src/server.c:xacto_client_service:74 [0m[4] Received key, size 1
+[1;35mDEBUG: src/server.c:xacto_client_service:91 [0m[4] Received value, size 1
+[1;35mDEBUG: src/data.c:blob_create:26 [0mCreate blob with content 0x7f37a0000940, size 1 -> 0x7f37a0000980
+[1;35mDEBUG: src/data.c:blob_ref:52 [0mIncrease reference count on blob 0x7f37a0000980 [a] (0 -> 1) for newly created blob
+[1;35mDEBUG: src/data.c:key_create:123 [0mCreate key from blob 0x7f37a0000980 -> 0x7f37a0000a10 [a]
+[1;35mDEBUG: src/data.c:blob_create:26 [0mCreate blob with content 0x7f37a0000960, size 1 -> 0x7f37a0000a30
+[1;35mDEBUG: src/data.c:blob_ref:52 [0mIncrease reference count on blob 0x7f37a0000a30 [1] (0 -> 1) for newly created blob
+[1;35mDEBUG: src/store.c:store_put:205 [0mPut mapping (key=0x7f37a0000a10 [a] -> value=0x7f37a0000a30 [1]) in store for transaction 0
+[1;35mDEBUG: src/store.c:find_map_entry:68 [0mCreate new map entry for key 0x7f37a0000a10 [a] at table index 1
+[1;35mDEBUG: src/store.c:add_version:90 [0mTrying to put version in map entry for key 0x7f37a0000a10 [a]
+[1;35mDEBUG: src/data.c:version_create:173 [0mCreate version of blob 0x7f37a0000a30 [1] for transaction 0 -> 0x7f37a0000ae0
+[1;35mDEBUG: src/transaction.c:trans_ref:70 [0mIncrease ref count on transaction 0 (1 -> 2) as creator of version
+[1;35mDEBUG: src/store.c:add_version:169 [0mAdd new version for key 0x7f37a0000a10 [a]
+[1;35mDEBUG: src/store.c:add_version:178 [0mNo previous version
+CONTENTS OF STORE:
+0:
+1:	{key: 0x7f37a0000a10 [a], versions: {creator=0 (pending), blob=0x7f37a0000a30 [1]}}
+2:
+3:
+4:
+5:
+6:
+7:
+TRANSACTIONS:
+[id=0, status=0, refcnt=2]
+[1;35mDEBUG: src/server.c:xacto_client_service:56 [0m[4] COMMIT packet received
+[1;35mDEBUG: src/transaction.c:trans_commit:196 [0mTransaction 0 trying to commit
+[1;35mDEBUG: src/transaction.c:trans_commit:226 [0mTransaction 0 commits
+[1;35mDEBUG: src/transaction.c:release_dependents:174 [0mRelease 0 waiters dependent on transaction 0
+[1;35mDEBUG: src/transaction.c:trans_unref:90 [0mDecrease ref count on transaction 0 (2 -> 1) for committing transaction
+CONTENTS OF STORE:
+0:
+1:	{key: 0x7f37a0000a10 [a], versions: {creator=0 (committed), blob=0x7f37a0000a30 [1]}}
+2:
+3:
+4:
+5:
+6:
+7:
+TRANSACTIONS:
+[id=0, status=1, refcnt=1]
+[1;35mDEBUG: src/protocol.c:proto_recv_packet:88 [0mEOF on fd: 4
+[1;35mDEBUG: src/server.c:xacto_client_service:117 [0m[4] Ending client service
+[1;35mDEBUG: src/client_registry.c:creg_unregister:83 [0mUnregister client 4 (total connected: 0)
