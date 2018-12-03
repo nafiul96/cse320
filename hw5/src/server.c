@@ -25,7 +25,7 @@
 //  * Client registry that should be used to track the set of
 //  * file descriptors of currently connected clients.
 //  */
-// extern CLIENT_REGISTRY *client_registry;
+// CLIENT_REGISTRY *client_registry;
 
 // /*
 //  * Thread function for the thread that handles client requests.
