@@ -60,10 +60,8 @@ void *xacto_client_service(void *arg){
                 case XACTO_PUT_PKT:
                 //Packet reception
                 debug("[%d] PUT packet received", connfd);
-
                 // needs to retrieve two data packet(key, value)
                 void **keydata, **content;
-
 
                 keydata = Malloc( sizeof(void **) );
                 if( proto_recv_packet(connfd,pkt,keydata) == 0){
@@ -78,20 +76,14 @@ void *xacto_client_service(void *arg){
                 //create key-blob and then create key with the key-blob
                 BLOB *keyblob = blob_create(*keydata, strlen(*keydata));
                 KEY *hkey = key_create(keyblob);
-                //Free(keydata);
-                //create val-blob
                 BLOB *valblob = blob_create(*content, strlen(*content));
-                //Free(content);
                 store_put(tp, hkey, valblob);
                 pkt->type = XACTO_REPLY_PKT;
                 pkt->status = tp->status;
                 pkt->size = 0;
                 pkt->null = 0;
                 proto_send_packet(connfd,pkt,NULL);
-               // Free(pkt);
                 break;
-
-
 
                 case XACTO_GET_PKT:
                 debug("[%d]Get packet received", connfd);
@@ -113,8 +105,6 @@ void *xacto_client_service(void *arg){
                     proto_send_packet(connfd,pkt,valblob);
                 }
 
-
-
                 break;
 
                 case XACTO_COMMIT_PKT:
@@ -123,15 +113,11 @@ void *xacto_client_service(void *arg){
                 pkt->type = XACTO_REPLY_PKT;
                 pkt->status = tp->status;
                 pkt->size = 0;
-                pkt->null = 1;
+                pkt->null = 0;
                 proto_send_packet(connfd,pkt,NULL);
-                //Free(pkt);
-                //Close(connfd);
-                //return NULL;
                 break;
 
             }
-
 
             //typedef enum { TRANS_PENDING, TRANS_COMMITTED, TRANS_ABORTED } TRANS_STATUS;
             store_show();
