@@ -91,9 +91,21 @@ void creg_unregister(CLIENT_REGISTRY *cr, int fd){
 }
 
 void creg_wait_for_empty(CLIENT_REGISTRY *cr){
-    P(&cr->mutex);
-    while(cr->n > 0);
-    V(&cr->mutex);
+    // P(&cr->mutex);
+    // for(int i=0; i<1024; i++){
+
+    // }
+    // V(&cr->mutex);
+    //P(&cr->items);
+    //
+    // while(cr->n >0){
+    //     creg_unregister();
+    // }
+    for(int i=0 ; i<MAX_CONN; i++){
+        if(cr->buf[i] != 0){
+            creg_unregister(cr,cr->buf[i]);
+        }
+    }
 }
 
 void creg_shutdown_all(CLIENT_REGISTRY *cr){
@@ -101,6 +113,7 @@ void creg_shutdown_all(CLIENT_REGISTRY *cr){
     for(int i=0; i<MAX_CONN; i++){
         if(cr->buf[i] !=0){
             shutdown(cr->buf[i], SHUT_RD);
+            //creg_unregister(cr,cr->buf[i]);
         }
     }
 
