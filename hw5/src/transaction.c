@@ -114,17 +114,18 @@
 //     tmp->next->prev = tmp;
 //     char why[] = " Newly Created Transaction";
 //     tmp = trans_ref(tmp, why);
+//     P(&tmp->sem);
 //     pthread_mutex_unlock(&trans_list.mutex);
 //     return tmp;
 // }
 
-
+// /*
 //  * Increase the reference count on a transaction.
 //  *
 //  * @param tp  The transaction.
 //  * @param why  Short phrase explaining the purpose of the increase.
 //  * @return  The transaction pointer passed as the argument.
-
+// */
 // TRANSACTION *trans_ref(TRANSACTION *tp, char *why){
 //     pthread_mutex_lock(&tp->mutex);
 //     tp->refcnt++;
@@ -147,6 +148,9 @@
 //     if(tp->refcnt == 0){
 //         tp->prev->next = tp->next;
 //         tp->next->prev = tp->prev;
+//         pthread_mutex_lock(&trans_list.mutex);
+//         trans_list.waitcnt--;
+//         pthread_mutex_unlock(&trans_list.mutex);
 //         Free(tp);
 //         return;
 //     }
@@ -161,13 +165,15 @@
 //  * @param dtp  The transaction that is being added to the dependency set.
 //  */
 // void trans_add_dependency(TRANSACTION *tp, TRANSACTION *dtp){
-//     pthread_mutex_lock(&trans_list.mutex);
+//     pthread_mutex_lock(&tp->mutex);
+//     char why[] = "including dependency";
 //     if(tp->depends == NULL){
 //         DEPENDENCY *dp = Malloc(sizeof(DEPENDENCY));
 //         dp->trans = dtp;
 //         dp->next = NULL;
 //         tp->depends = dp;
-//         pthread_mutex_unlock(&trans_list.mutex);
+//         trans_ref(dtp,why);
+//         pthread_mutex_unlock(&tp->mutex);
 //         return;
 //     }
 
@@ -183,8 +189,8 @@
 //     dptr->trans = dtp;
 //     dptr->next = tp->depends;
 //     tp->depends = dptr;
-
-//     pthread_mutex_unlock(&trans_list.mutex);
+//     trans_ref(dtp,why);
+//     pthread_mutex_unlock(&tp->mutex);
 
 
 // }
@@ -205,10 +211,32 @@
 //  */
 // TRANS_STATUS trans_commit(TRANSACTION *tp){
 
-//     char why[]= "Committing transaction";
-//     trans_unref(tp, why);
+//     pthread_mutex_lock(&tp->mutex);
+//     P(&tp->sem);
+//     //char why[]= "Committing transaction";
+//     // trans_unref(tp, why);
 //     tp->status = TRANS_COMMITTED;
-//     return tp->status;
+//     DEPENDENCY *ptr;
+//     for(ptr= tp->depends; ptr != NULL; ptr= ptr->next){
+
+//         pthread_mutex_lock(&ptr->trans->mutex);
+//         ptr->trans->waitcnt++;
+//         pthread_mutex_unlock(&ptr->trans->mutex);
+//         P(&ptr->trans->sem);
+//         if( trans_get_status(ptr->trans) == TRANS_ABORTED ){
+//             tp->status = TRANS_ABORTED;
+//             V(&ptr->trans->sem);
+//             V(&tp->sem);
+//             //pthread_mutex_unlock(&tp->mutex);
+//             break;
+//         }else if( trans_get_status(ptr->trans) == TRANS_COMMITTED){
+
+//         }
+//     }
+
+//     pthread_mutex_unlock(&tp->mutex);
+
+//     return trans_get_status(tp);
 // }
 
 // /*
@@ -225,23 +253,41 @@
 //  * @return  TRANS_ABORTED.
 //  */
 // TRANS_STATUS trans_abort(TRANSACTION *tp){
+
+//     pthread_mutex_lock(&tp->mutex);
+//     char why[]= "aborting transaction";
 //     if(tp == NULL){
+//         pthread_mutex_unlock(&tp->mutex);
 //         return TRANS_ABORTED;
 //     }
-//     char why[]= "aborting transaction";
-//     trans_unref(tp, why);
 
-//     if(tp->status == TRANS_ABORTED){
-//         return tp->status;
+//     if(trans_get_status(tp) == TRANS_COMMITTED){
+//         trans_unref(tp, why);
+//         abort();
+//         tp->status = TRANS_ABORTED;
+//         pthread_mutex_unlock(&tp->mutex);
+//         return trans_get_status(tp);
 //     }
 
-//     //global mutex
-//     //local mutex
+//     if( trans_get_status(tp) == TRANS_ABORTED ){
+//         trans_unref(tp, why);
+//         pthread_mutex_unlock(&tp->mutex);
+//         return trans_get_status(tp);
+//     }
 
+//     if(trans_get_status(tp) == TRANS_PENDING){
 
-//     tp->status = TRANS_ABORTED;
-//     return tp->status;
+//         DEPENDENCY *ptr;
+//         for( ptr= tp->depends; ptr != NULL; ptr = ptr->next){
+//             trans_abort(tp);
+//         }
+//         tp->status = TRANS_ABORTED;
+//         trans_unref(tp, why);
+//         pthread_mutex_unlock(&tp->mutex);
+//         return trans_get_status(tp);
+//     }
 
+//     return TRANS_ABORTED;
 // }
 
 // /*
