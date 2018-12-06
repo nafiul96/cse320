@@ -114,7 +114,6 @@
 //     tmp->next->prev = tmp;
 //     char why[] = " Newly Created Transaction";
 //     tmp = trans_ref(tmp, why);
-//     P(&tmp->sem);
 //     pthread_mutex_unlock(&trans_list.mutex);
 //     return tmp;
 // }
@@ -127,6 +126,9 @@
 //  * @return  The transaction pointer passed as the argument.
 // */
 // TRANSACTION *trans_ref(TRANSACTION *tp, char *why){
+//     if(tp == NULL){
+//         return NULL;
+//     }
 //     pthread_mutex_lock(&tp->mutex);
 //     tp->refcnt++;
 //     debug("Increased ref count to %d, %s",tp->refcnt,why);
@@ -134,15 +136,18 @@
 //     return tp;
 // }
 
-// /*
+
 //  * Decrease the reference count on a transaction.
 //  * If the reference count reaches zero, the transaction is freed.
 //  *
 //  * @param tp  The transaction.
 //  * @param why  Short phrase explaining the purpose of the decrease.
-//  */
+
 // void trans_unref(TRANSACTION *tp, char *why){
 
+//     if(tp == NULL){
+//         return;
+//     }
 //     pthread_mutex_lock(&tp->mutex);
 //     tp->refcnt--;
 //     if(tp->refcnt == 0){
@@ -211,32 +216,27 @@
 //  */
 // TRANS_STATUS trans_commit(TRANSACTION *tp){
 
-//     pthread_mutex_lock(&tp->mutex);
-//     P(&tp->sem);
-//     //char why[]= "Committing transaction";
-//     // trans_unref(tp, why);
-//     tp->status = TRANS_COMMITTED;
-//     DEPENDENCY *ptr;
-//     for(ptr= tp->depends; ptr != NULL; ptr= ptr->next){
+//     if(tp == NULL){
+//         return TRANS_ABORTED;
+//     }
 
+//     DEPENDENCY *ptr;
+//     for(ptr= tp->depends; ptr != NULL; ptr = ptr->next){
 //         pthread_mutex_lock(&ptr->trans->mutex);
 //         ptr->trans->waitcnt++;
 //         pthread_mutex_unlock(&ptr->trans->mutex);
 //         P(&ptr->trans->sem);
-//         if( trans_get_status(ptr->trans) == TRANS_ABORTED ){
-//             tp->status = TRANS_ABORTED;
-//             V(&ptr->trans->sem);
-//             V(&tp->sem);
-//             //pthread_mutex_unlock(&tp->mutex);
-//             break;
-//         }else if( trans_get_status(ptr->trans) == TRANS_COMMITTED){
+//     }
 
+//     for(ptr = tp->depends; ptr != NULL; ptr = ptr->next){
+
+//         if(ptr->trans->status == TRANS_ABORTED){
+//             tp->
 //         }
 //     }
 
-//     pthread_mutex_unlock(&tp->mutex);
 
-//     return trans_get_status(tp);
+
 // }
 
 // /*
@@ -284,6 +284,7 @@
 //         tp->status = TRANS_ABORTED;
 //         trans_unref(tp, why);
 //         pthread_mutex_unlock(&tp->mutex);
+//         V(&tp->sem);
 //         return trans_get_status(tp);
 //     }
 

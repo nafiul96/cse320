@@ -79,6 +79,9 @@ BLOB *blob_create(char *content, size_t size){
  */
 BLOB *blob_ref(BLOB *bp, char *why){
 
+    // if(bp == NULL){
+    //     return NULL;
+    // }
     pthread_mutex_lock(&bp->mutex);
     bp->refcnt = bp->refcnt+1;
    debug("increase ref count for blob %p, %s",bp, why);
@@ -95,6 +98,9 @@ BLOB *blob_ref(BLOB *bp, char *why){
  * @param why  Short phrase explaining the purpose of the decrease.
  */
 void blob_unref(BLOB *bp, char *why){
+    if(bp == NULL){
+        return;
+    }
     pthread_mutex_lock(&bp->mutex);
     bp->refcnt = bp->refcnt -1;
     if(bp->refcnt <= 0){
@@ -112,7 +118,8 @@ void blob_unref(BLOB *bp, char *why){
  * @param bp1  The first blob.
  * @param bp2  The second blob.
  * @return 0 if the blobs have equal content, nonzero otherwise.
- */
+*/
+
 int blob_compare(BLOB *bp1, BLOB *bp2){
 
     if( bp1 == NULL){
@@ -154,13 +161,14 @@ int blob_hash(BLOB *bp){
  * @return  the newly created key.
  */
 KEY *key_create(BLOB *bp){
-    pthread_mutex_lock(&bp->mutex);
+
+    //pthread_mutex_lock(&bp->mutex);
     KEY *k = Malloc( sizeof(KEY));
     k->hash = blob_hash(bp);
     k->blob = bp;
-    pthread_mutex_unlock(&bp->mutex);
-    char why[] = "for key ref";
-    blob_ref(bp, why);
+    //pthread_mutex_unlock(&bp->mutex);
+    //char why[] = "for key ref";
+    //blob_ref(bp, why);
 
     return k;
 }
@@ -214,7 +222,7 @@ int key_compare(KEY *kp1, KEY *kp2){
  * @return  The newly created version.
  */
 VERSION *version_create(TRANSACTION *tp, BLOB *bp){
-
+   // pthread_mutex_lock(&bp->mutex);
     VERSION *ver = Malloc(sizeof(VERSION));
     ver->creator = tp;
     //ver->creator->refcnt = ver->creator->refcnt+1;
@@ -223,6 +231,7 @@ VERSION *version_create(TRANSACTION *tp, BLOB *bp){
     ver->blob = bp;
     ver->next = NULL;
     ver->prev = NULL;
+    //pthread_mutex_unlock(&bp->mutex);
 
     return ver;
 
@@ -240,9 +249,10 @@ void version_dispose(VERSION *vp){
 
     //vp->creator->refcnt = vp->creator->refcnt-1;
     //
+
     char why[]="version dump";
-    blob_unref(vp->blob, why);
     trans_unref(vp->creator, why);
+    blob_unref(vp->blob, why);
     Free(vp);
 
 }
