@@ -87,8 +87,17 @@ void trans_init(void){
  * Finalize the transaction manager.
  */
 void trans_fini(void){
-    trans_list.next = NULL;
-    trans_list.prev = NULL;
+   // trans_list.next = NULL;
+    //trans_list.prev = NULL;
+    //
+    TRANSACTION *ptr = &trans_list;
+    for(ptr = ptr->next; ptr != &trans_list; ptr = ptr->next){
+        if(ptr->status == TRANS_PENDING){
+            trans_abort(ptr);
+        }
+    }
+   // ptr = &trans_list;
+   // while()
 }
 
 /*
@@ -109,10 +118,14 @@ TRANSACTION *trans_create(void){
     temp->status = TRANS_PENDING;
     temp->refcnt = 0;
     temp->depends = NULL;
+
+
     temp->next = &trans_list;
     temp->prev = trans_list.prev;
     trans_list.prev->next = temp;
     trans_list.prev = temp;
+
+
     char why[]= "create new transaction";
     trans_ref(temp, why);
     pthread_mutex_unlock(&myid);
@@ -158,6 +171,12 @@ void trans_unref(TRANSACTION *tp, char *why){
         if( tp->depends == NULL){
             //
             //
+            //blockptr->links.prev->links.next = blockptr->links.next;
+            //blockptr->links.next->links.prev = blockptr->links.prev;
+
+            //
+            tp->prev->next = tp->next;
+            tp->next->prev = tp->prev;
             Free(tp);
         }else{
 
@@ -170,6 +189,8 @@ void trans_unref(TRANSACTION *tp, char *why){
             }
             //
             //
+            tp->prev->next = tp->next;
+            tp->next->prev = tp->prev;
             Free(tp);
         }
 
@@ -195,7 +216,7 @@ void trans_add_dependency(TRANSACTION *tp, TRANSACTION *dtp){
     dep->next = NULL;
     debug("trying to add transaction %d to depen of transaction %d", dtp->id, tp->id);
     if(tp->depends == NULL){
-
+        tp->depends = dep;
         char why[]="increase dtp to add dependency";
         trans_ref(dtp,why);
         return;
@@ -250,10 +271,12 @@ TRANS_STATUS trans_commit(TRANSACTION *tp){
         if(p->trans->status == TRANS_ABORTED){
 
             tp->status = TRANS_ABORTED;
+             pthread_mutex_lock(&tp->mutex);
             int ct = tp->waitcnt;
             for(int i=0; i<ct; i++){
                 V(&tp->sem);
             }
+            pthread_mutex_unlock(&tp->mutex);
             char why[]="transaction aborted";
             trans_unref(tp, why);
             return TRANS_ABORTED;
