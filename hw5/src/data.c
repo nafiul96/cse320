@@ -70,7 +70,8 @@ BLOB *blob_create(char *content, size_t size){
     bl->refcnt = 0;
     pthread_mutex_init(&bl->mutex, NULL);
     char why[] = "for newly created blob";
-    return blob_ref(bl,why);
+    blob_ref(bl,why);
+    return bl;
 
 
 }
