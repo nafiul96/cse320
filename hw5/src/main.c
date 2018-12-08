@@ -25,6 +25,7 @@ void handle_hup(int status);
 
 CLIENT_REGISTRY *client_registry;
 
+
 int main(int argc, char* argv[]){
     // Option processing should be performed here.
     // Option '-p <port>' is required in order to specify the port number
@@ -128,7 +129,6 @@ void terminate(int status) {
     creg_fini(client_registry);
     trans_fini();
     store_fini();
-
     debug("Xacto server terminating");
     exit(status);
 }
