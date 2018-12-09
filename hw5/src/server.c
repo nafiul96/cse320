@@ -11,18 +11,6 @@
 #include "store.h"
 #include <time.h>
 
-/**
- * === DO NOT MODIFY THIS FILE ===
- * If you need some other prototypes or constants in a header, please put them
- * in another header file.
- *
- * When we grade, we will be replacing this file with our own copy.
- * You have been warned.
- * === DO NOT MODIFY THIS FILE ===
- */
-//#ifndef SERVER_H
-//#define SERVER_H
-
 
 /*
  * Client registry that should be used to track the set of
@@ -48,107 +36,100 @@ void *xacto_client_service(void *arg){
 
     XACTO_PACKET *rcv, *send;
 
-    struct timeval clock;
-    double sec;
-    double nsec;
+    struct timespec clock;
 
     while(1){
 
-        rcv = (XACTO_PACKET *)Malloc(sizeof(XACTO_PACKET));
-        memset(rcv, 0, sizeof(XACTO_PACKET));
-        send = (XACTO_PACKET *)Malloc(sizeof(XACTO_PACKET));
-        memset(send, 0, sizeof(XACTO_PACKET));
-        void **datap = Malloc( sizeof(void **));
-        memset(datap, 0, sizeof(char **));
+        rcv = (XACTO_PACKET *)Calloc(1,sizeof(XACTO_PACKET));
+        send = (XACTO_PACKET *)Calloc(1,sizeof(XACTO_PACKET));
+        void **payload = Calloc( 1,sizeof(void **));
 
-        if( proto_recv_packet(connfd, rcv,datap) == -1){
+        if( proto_recv_packet(connfd, rcv,payload) < 0){
+            if(tp->status == TRANS_PENDING){
+                trans_abort(tp);
+            }
             Free(rcv);
             Free(send);
-            Free(datap);
+            Free(payload);
             Close(connfd);
             break;
 
         }else{
-
-
-            BLOB *key_blob, *value_blob;
+            BLOB *hkey_blob, *value_blob;
             KEY *hkey;
 
             switch(rcv->type){
 
                 case XACTO_PUT_PKT:
                 debug("[%d] PUT packet received", connfd);
-                proto_recv_packet(connfd,rcv,datap);
-                char *key = (char *)(*datap);
-                int ksize = rcv->size;
-                debug("received key, size %d", ksize);
-                //Free(key);
-                proto_recv_packet(connfd,rcv,datap);
-                char *value = (char *)(*datap);
-                int vsize = rcv->size;
-                debug("received value, size %d",vsize);
-                //Free(value);
-                key_blob = blob_create(key,ksize);
-                hkey = key_create(key_blob);
-                value_blob = blob_create(value, vsize);
+
+                // Receive Key
+                proto_recv_packet(connfd,rcv,payload);
+                //int ksize = rcv->size;
+                debug("received key, size %d", rcv->size);
+                hkey_blob = blob_create((char *)(*payload),rcv->size);
+                hkey = key_create(hkey_blob);
+                Free(*payload);
+
+                // Receive Value
+                proto_recv_packet(connfd,rcv,payload);
+                // char *value = (char *)(*datap);
+                // int vsize = rcv->size;
+                debug("received value, size %d",rcv->size);
+                value_blob = blob_create((char *)(*payload), rcv->size);
+                Free(*payload);
                 store_put(tp, hkey, value_blob);
-                Free(key);
-                Free(value);
+
                 send->type = XACTO_REPLY_PKT;
                 send->status = tp->status;
                 send->size = 0;
                 send->null = 0;
-                if(gettimeofday(&clock, NULL) == -1){
+                //clock_gettime( CLOCK_REALTIME, &start)
+                if(clock_gettime( CLOCK_MONOTONIC, &clock) == -1){
                     perror("error in getting time");
                 }
-                sec = (double)clock.tv_sec;
-                nsec = (double)clock.tv_usec;
-                send->timestamp_sec = sec;
-                send->timestamp_nsec = nsec*1000;
+                send->timestamp_sec = clock.tv_sec;
+                send->timestamp_nsec = clock.tv_nsec;
                 proto_send_packet(connfd,send,NULL);
                 store_show();
                 trans_show_all();
                 break;
 
+
                 case XACTO_GET_PKT:
+
                 debug("[%d] GET packet received", connfd);
-                char *getkey;
-                proto_recv_packet(connfd,rcv, datap);
-                getkey = (char *)(*datap);
-                int keylen = rcv->size;
-                debug("received key, size %d", keylen);
-                key_blob = blob_create(getkey, keylen);
-                //debug("[%d] Value is %s", connfd, bp->prefix);
-                //Free(getkey);
-                Free(*datap);
-                BLOB **bp = Malloc( sizeof(BLOB **) );
-                hkey = key_create(key_blob);
+
+                proto_recv_packet(connfd,rcv, payload);
+                debug("received key, size %d", rcv->size);
+                hkey_blob = blob_create((char *)(*payload), rcv->size);
+                Free(*payload);
+                BLOB **bp = Calloc(1, sizeof(BLOB **) );
+                hkey = key_create(hkey_blob);
                 store_get(tp,hkey,bp);
 
                 send->type = XACTO_REPLY_PKT;
                 send->status = tp->status;
                 send->size = 0;
                 send->null = 0;
-                if(gettimeofday(&clock, NULL) == -1 ){
+                if(clock_gettime( CLOCK_MONOTONIC, &clock) == -1 ){
                     perror("error in getting time");
                 }
-                sec = (double)clock.tv_sec;
-                nsec = (double)clock.tv_usec;
-                send->timestamp_sec = sec;
-                send->timestamp_nsec = nsec * 1000;
+
+                send->timestamp_sec = clock.tv_sec;
+                send->timestamp_nsec = clock.tv_nsec;
                 proto_send_packet(connfd,send,NULL);
 
                 send->type = XACTO_DATA_PKT;
                 send->status = tp->status;
                 send->size = 0;
                 send->null = 0;
-                if(gettimeofday(&clock, NULL) == -1 ){
+                if(clock_gettime( CLOCK_MONOTONIC, &clock) == -1 ){
                     perror("error in getting time");
                 }
-                sec = (double)clock.tv_sec;
-                nsec = (double)clock.tv_usec;
-                send->timestamp_sec = sec;
-                send->timestamp_nsec = nsec * 1000;
+
+                send->timestamp_sec = clock.tv_sec;
+                send->timestamp_nsec = clock.tv_nsec;
                 if( *bp == NULL){
                     send->null = 1;
                     proto_send_packet(connfd,send,NULL);
@@ -156,9 +137,8 @@ void *xacto_client_service(void *arg){
                 }else{
                     send->size = (*bp)->size;
                     proto_send_packet(connfd,send,(*bp)->content);
-                    //char why[]="gettig from store";
-                    //Free(*bp);
-                    blob_unref(*bp,"");
+                    char why[]="unref copied version from getstore";
+                    blob_unref(*bp,why);
                 }
 
                 Free(bp);
@@ -174,18 +154,13 @@ void *xacto_client_service(void *arg){
                 send->status = tp->status;
                 send->size = 0;
                 send->null = 0;
-                if( gettimeofday(&clock, NULL) ==-1){
+                if( clock_gettime( CLOCK_MONOTONIC, &clock) ==-1){
                     perror("getting time error!");
                 }
-                sec= (double)clock.tv_sec;
-                nsec = (double)clock.tv_usec;
-                send->timestamp_sec = sec;
-                send->timestamp_nsec = nsec * 1000;
-                // if(!send->null){
-                //     proto_send_packet(connfd, send,(*bp)->content);
-                // }else{
-                    proto_send_packet(connfd, send,NULL);
-               // }
+
+                send->timestamp_sec = clock.tv_sec;
+                send->timestamp_nsec = clock.tv_nsec;
+                proto_send_packet(connfd, send,NULL);
 
                 store_show();
                 trans_show_all();
@@ -193,11 +168,9 @@ void *xacto_client_service(void *arg){
 
             }
 
-
-
             Free(rcv);
             Free(send);
-            Free(datap);
+            Free(payload);
 
         }
 
@@ -214,7 +187,6 @@ void *xacto_client_service(void *arg){
     debug("Ending client service %d", connfd);
     creg_unregister(client_registry, connfd);
     debug("Unregister cleint %d", connfd);
-    //Free(tp);
     return NULL;
 }
 

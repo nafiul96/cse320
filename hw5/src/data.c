@@ -3,45 +3,7 @@
 #include "csapp.h"
 #include "debug.h"
 
-/*
- * A "blob" consists of arbitrary data having a specified size
- * and content.  The content must not be null.  Once a blob has
- * been created, its size and content do not change.  A blob has
- * a reference count field, which is used to keep track of the
- * number of pointers that currently exist pointing to the blob.
- * New pointers are created using blob_ref(), which increments the
- * reference count.  Pointers are destroyed using blob_unref(),
- * which decrements the reference count.  As long as the reference
- * count of a blob is nonzero, it will not be freed.
- */
-// typedef struct blob {
-//     pthread_mutex_t mutex;     // Mutex to protect reference count
-//     int refcnt;
-//     size_t size;
-//     char *content;
-//     char *prefix;              // String prefix of content (for debugging)
-// } BLOB;
 
-/*
- * A key consists of a pointer to a blob and a hash of the blob data.
- */
-// typedef struct key {
-//     int hash;
-//     BLOB *blob;
-// } KEY;
-
-/*
- * A VERSION represents a single version of a value associated with a key
- * in the transactional store.  Each version has a creator transaction,
- * a pointer to a blob and links to the next and previous versions in the
- * list of all versions in the same map entry.
- */
-// typedef struct version {
-//     TRANSACTION *creator;
-//     BLOB *blob;
-//     struct version *next;
-//     struct version *prev;
-// } VERSION;
 
 /*
  * Create a blob with given content and size.
@@ -55,16 +17,16 @@
  */
 BLOB *blob_create(char *content, size_t size){
 
-    BLOB *bl = Malloc( sizeof(BLOB));
-    memset(bl, 0, sizeof(BLOB));
-    bl->content = Malloc(size);
-    memset(bl->content, 0, size);
+    BLOB *bl = Calloc( 1,sizeof(BLOB));
+    //memset(bl, 0, sizeof(BLOB));
+    bl->content = Calloc(size, sizeof(char *));
+    //memset(bl->content, 0, size);
     memcpy(bl->content, content,size);
     //bl->content = val;
     //
     //bl->content[size]='\0';
-    bl->prefix = Malloc(size);
-    memset(bl->prefix, 0, size);
+    bl->prefix = Calloc(size, sizeof(char *));
+    //memset(bl->prefix, 0, size);
     memcpy(bl->prefix,content,size);
     bl->size = size;
     bl->refcnt = 0;
@@ -160,12 +122,12 @@ int blob_hash(BLOB *bp){
    unsigned int hash = 0;
    int c;
    char *str= bp->content;
-  // str[bp->size] = '\0';
-   int count = 0;
-   while (  (c = str[count]) && (count < bp->size) ){
-    count++;
+
+   for(int i=0; i<bp->size; i++){
+    c= str[i];
     hash +=c;
    }
+
    return hash;
 }
 
@@ -178,15 +140,9 @@ int blob_hash(BLOB *bp){
  */
 KEY *key_create(BLOB *bp){
 
-    //pthread_mutex_lock(&bp->mutex);
-    KEY *k = Malloc(sizeof(KEY));
-    memset(k, 0, sizeof(KEY));
+    KEY *k = Calloc(1,sizeof(KEY));
     k->hash = blob_hash(bp);
     k->blob = bp;
-    //pthread_mutex_unlock(&bp->mutex);
-    //char why[] = "for key ref";
-    //blob_ref(bp, why);
-
     return k;
 }
 
@@ -199,7 +155,6 @@ KEY *key_create(BLOB *bp){
  */
 void key_dispose(KEY *kp){
 
-    //kp->blob->refcnt = kp->blob->refcnt-1;
     char why [] = "key disposal";
     blob_unref(kp->blob, why);
     Free(kp);
@@ -263,9 +218,6 @@ VERSION *version_create(TRANSACTION *tp, BLOB *bp){
  * @param vp  The version to be disposed.
  */
 void version_dispose(VERSION *vp){
-
-    //vp->creator->refcnt = vp->creator->refcnt-1;
-    //
 
     char why[]="version dump";
     trans_unref(vp->creator, why);

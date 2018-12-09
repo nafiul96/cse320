@@ -7,10 +7,6 @@
 #include <inttypes.h>
 
 
-//static void init_echo_cnt(void);
-// int readcnt = 0;
-//static sem_t mutex;
-//static int count;
 
 int proto_send_packet(int fd, XACTO_PACKET *pkt, void *data){
 
@@ -47,8 +43,7 @@ int proto_recv_packet(int fd, XACTO_PACKET *pkt, void **datap){
     pkt->timestamp_nsec = ntohl(pkt->timestamp_nsec);
 
     if( pkt->size >0){
-        *datap = Malloc(sizeof(pkt->size) );
-        memset(*datap, 0, pkt->size);
+        *datap = Calloc(pkt->size, sizeof(char *));
         if( rio_readn(fd, *datap, pkt->size) <= 0 ){
             return -1;
         }
